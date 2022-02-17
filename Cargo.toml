@@ -19,3 +19,5 @@ members = ["./", "tools/ci"]
 
 [dependencies]
 bevy = { version = "0.6", default-features = false, features = ["dynamic"]}
+num-traits = "0.2"
+derive_more = "0.99"
