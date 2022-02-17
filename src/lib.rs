@@ -3,4 +3,4 @@
 #![warn(clippy::doc_markdown)]
 #![doc = include_str!("../README.md")]
 
-pub mod rotation;
+pub mod orientation;
