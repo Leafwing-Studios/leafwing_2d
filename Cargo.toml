@@ -1,9 +1,9 @@
 [package]
-name = "leafwing-2d"
+name = "leafwing_2d"
 description = "Helper functions and structs for working with 2D space in Bevy."
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Leafwing Studios"]
-repository = "https://github.com/leafwing-studios/leafwing-2d"
+repository = "https://github.com/leafwing-studios/leafwing_2d"
 license = "MIT OR Apache-2.0"
 edition = "2021"
 categories = ["game-development"]
