@@ -1,5 +1,5 @@
 # Release Notes
 
-## Version 0.0
+## Version 0.1
 
-- Template release, plz ignore
+- Added `Direction` and `Rotation`

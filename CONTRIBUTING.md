@@ -50,12 +50,6 @@ Use `cargo doc --open` to build and then open the docs.
 Design docs (or other book-format documentation) is handled with [mdBook](https://rust-lang.github.io/mdBook/index.html).
 Install it with `cargo install mdbook`, then use `mdbook serve --open` to launch the docs.
 
-## Benchmarking
-
-To run the benchmarks, use `cargo bench`.
-
-For more documentation on making your own benchmarks, check out [criterion's docs](https://bheisler.github.io/criterion.rs/book/index.html).
-
 ## Publishing your crate
 
 This repository is designed to make publishing crates easy! Just follow [cargo's directions](https://doc.rust-lang.org/cargo/reference/publishing.html) and you'll be an official part of the Rust ecosystem in no time!

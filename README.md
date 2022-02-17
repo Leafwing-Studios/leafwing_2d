@@ -36,19 +36,9 @@ Finally:
 3. Update this README to match your project, modifying `About`, `Getting Started` and other sections as needed.
 4. Consider cleaning up the issue and PR templates found in the `.github` folder to better match your needs.
 
-### Running your game
-
-Use `cargo run`.
-This repo is set up to always build with full optimizations, so there's no need for a `--release` flag in most cases.
-Dynamic linking is enabled to ensure build times stay snappy.
+### Running examples
 
 To run an example, use `cargo run --example_name`, where `example_name` is the file name of the example without the `.rs` extension.
-
-### Publishing your game
-
-A build will be produced for Windows, MacOS and Linux each time a [tag](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/managing-commits/managing-tags) is pushed to GitHub.
-
-These can be found under the [Releases](https://docs.github.com/en/rest/reference/releases) tab of your project.
 
 ## Contributing
 
@@ -97,9 +87,3 @@ Use `cargo doc --open` to build and then open the docs.
 
 Design docs (or other book-format documentation) is handled with [mdBook](https://rust-lang.github.io/mdBook/index.html).
 Install it with `cargo install mdbook`, then use `mdbook serve --open` to launch the docs.
-
-### Benchmarking
-
-To run the benchmarks, use `cargo bench`.
-
-For more documentation on making your own benchmarks, check out [criterion's docs](https://bheisler.github.io/criterion.rs/book/index.html).
