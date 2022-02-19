@@ -17,11 +17,11 @@ pub trait BoundingRegion {
     /// Does this region contain the `point`?
     fn contains(&self, position: Position<Self::C>) -> bool;
 
-    // Does this region intersect with the `other_region` of the same type?
+    /// Does this region intersect with the `other_region` of the same type?
     fn intersects(&self, other_region: Self) -> Intersection;
 
     /// Clamp the provided position to the limits of this region, taking the shortest path
-    fn clamp_within(&self, position: Position<Self::C>) -> Position<Self::C>;
+    fn clamp(&self, position: Position<Self::C>) -> Position<Self::C>;
 }
 
 /// How do two [`BoundingRegions`](BoundingRegion) intersect?
@@ -38,56 +38,60 @@ pub enum Intersection {
 
 /// A 2-dimensional axis-aligned bounding box with coordinate type C
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
-pub struct AxisAlignedBoundingBox<C> {
-    low_x: C,
-    low_y: C,
-    high_x: C,
-    high_y: C,
+pub struct AxisAlignedBoundingBox<C: Clone> {
+    /// The left extent of the bounding box
+    pub low_x: C,
+    /// The bottom extent of the bounding box
+    pub low_y: C,
+    /// The right extent of the bounding box
+    pub high_x: C,
+    /// The top extent of the bounding box
+    pub high_y: C,
 }
 
-impl<C> AxisAlignedBoundingBox<C> {
+impl<C: Clone> AxisAlignedBoundingBox<C> {
     /// Gets the bottom left [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn bottom_left(&self) -> Position<C> {
+    pub fn bottom_left(&self) -> Position<C> {
         Position {
-            x: self.low_x,
-            y: self.low_y,
+            x: self.low_x.clone(),
+            y: self.low_y.clone(),
         }
     }
 
     /// Gets the bottom right [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn bottom_right(&self) -> Position<C> {
+    pub fn bottom_right(&self) -> Position<C> {
         Position {
-            x: self.high_x,
-            y: self.low_y,
+            x: self.high_x.clone(),
+            y: self.low_y.clone(),
         }
     }
 
     /// Gets the top left [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn top_left(&self) -> Position<C> {
+    pub fn top_left(&self) -> Position<C> {
         Position {
-            x: self.low_x,
-            y: self.high_y,
+            x: self.low_x.clone(),
+            y: self.high_y.clone(),
         }
     }
 
     /// Gets the top_right [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn top_right(&self) -> Position<C> {
+    pub fn top_right(&self) -> Position<C> {
         Position {
-            x: self.high_x,
-            y: self.high_y,
+            x: self.high_x.clone(),
+            y: self.high_y.clone(),
         }
     }
 }
 
-impl<C> FromIterator<Position<C>> for AxisAlignedBoundingBox<C> {
+impl<C: Clone> FromIterator<Position<C>> for AxisAlignedBoundingBox<C> {
     fn from_iter<T>(iter: T) -> Self {
         todo!()
     }
@@ -100,4 +104,10 @@ pub struct OrientedBoundingBox<C> {
     low_y: C,
     high_x: C,
     high_y: C,
+}
+
+/// A 2-dimensional convex hull with coordinate type C
+#[derive(Debug, Component, Clone)]
+pub struct ConvexHull<C> {
+    hull_points: Vec<Position<C>>,
 }

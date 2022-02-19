@@ -28,27 +28,13 @@ impl<C> Position<C> {
     pub const fn new(x: C, y: C) -> Position<C> {
         Position { x, y }
     }
-
-    /// Modifies the [`Position`] so that it is within the provided axis-aligned bounding box
-    #[inline]
-    pub const fn clamp_to_aabb(&mut self, aabb: impl Into<AxisAlignedBoundingBox<C>>) {
-        let aabb = aabb.into();
-        self = aabb.clamp_within(self)
-    }
-
-    /// Modifies the [`Position`] so that it is within the provided oriented bounding box
-    #[inline]
-    pub const fn clamp_to_obb(&mut self, obb: impl Into<OrientedBoundingBox<C>>) {
-        let obb = obb.into();
-        self = obb.clamp_within(self)
-    }
 }
 
 impl<T: Sub<Output = T> + Into<f32>> Position<T> {
     /// Gets the direction that points away from this position, towards `other_position`
     #[inline]
     #[must_use]
-    pub const fn direction_to(self, other_position: Position<T>) -> Direction {
+    pub fn direction_to(self, other_position: Position<T>) -> Direction {
         let net_position: Position<T> = other_position - self;
         net_position.into()
     }
@@ -56,7 +42,7 @@ impl<T: Sub<Output = T> + Into<f32>> Position<T> {
     /// Gets the direction that points towards this position, from `other_position`
     #[inline]
     #[must_use]
-    pub const fn direction_from(self, other_position: Position<T>) -> Direction {
+    pub fn direction_from(self, other_position: Position<T>) -> Direction {
         let net_position: Position<T> = self - other_position;
         net_position.into()
     }
