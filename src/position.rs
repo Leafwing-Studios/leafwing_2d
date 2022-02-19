@@ -5,8 +5,6 @@ use bevy_ecs::prelude::Component;
 use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::{fmt::Debug, ops::*};
 
-pub use discrete_coordinates::*;
-
 /// A 2-dimensional coordinate
 ///
 /// The underlying data type `T` can be modified to control
@@ -36,8 +34,12 @@ impl<T: Sub<Output = T> + Into<f32>> Position<T> {
     }
 }
 
-mod discrete_coordinates {
-    use crate::orientation::{CardinalQuadrant, Direction, DirectionParitioning};
+/// Coordinate types for [`Position`] designed for operation on discrete grids
+pub mod discrete_coordinates {
+    use crate::orientation::{
+        partitioning::{CardinalQuadrant, DirectionParitioning},
+        Direction,
+    };
 
     use super::*;
 
