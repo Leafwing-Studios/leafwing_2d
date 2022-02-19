@@ -110,10 +110,7 @@ impl<C: Coordinate> Position<C> {
 
 /// Coordinate types for [`Position`] designed for operation on discrete grids
 pub mod discrete_coordinates {
-    use crate::orientation::{
-        partitioning::{CardinalQuadrant, DirectionParitioning},
-        Direction,
-    };
+    use crate::orientation::{partitioning::DirectionParitioning, Direction};
 
     use super::*;
 

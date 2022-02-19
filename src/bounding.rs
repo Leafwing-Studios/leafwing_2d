@@ -18,28 +18,24 @@ pub trait BoundingRegion {
     /// Does this region contain the `point`?
     fn contains(&self, position: Position<Self::C>) -> bool;
 
-    /// Does this region intersect with the `other_region` of the same type?
-    fn intersects(&self, other_region: Self) -> Intersection;
+    /// Does this region intersect with the `other` region of the same type?
+    fn intersects(&self, other: Self) -> Intersects;
 
     /// Clamp the provided position to the limits of this region, taking the shortest path
     fn clamp(&self, position: Position<Self::C>) -> Position<Self::C>;
 }
 
 /// How do two [`BoundingRegions`](BoundingRegion) intersect?
-pub enum Intersection {
-    /// The edges of the two regions intersect, and some but not all of the regions are shared
+pub enum Intersects {
+    /// The regions overlap, including if one region is contained within the other
     Yes,
     /// The two regions do not overlap at all
     No,
-    /// The first region is fully contained by the second region
-    SelfInOther,
-    /// The second region is fully contained by the first region
-    OtherInSelf,
 }
 
 /// A 2-dimensional axis-aligned bounding box with coordinate type C
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
-pub struct AxisAlignedBoundingBox<C: Clone> {
+pub struct AxisAlignedBoundingBox<C: Coordinate> {
     /// The left extent of the bounding box
     pub low_x: C,
     /// The bottom extent of the bounding box
@@ -48,6 +44,81 @@ pub struct AxisAlignedBoundingBox<C: Clone> {
     pub high_x: C,
     /// The top extent of the bounding box
     pub high_y: C,
+}
+
+impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
+    type C = C;
+
+    fn vertexes(&self) -> Vec<Position<Self::C>> {
+        vec![
+            self.top_right(),
+            self.bottom_right(),
+            self.bottom_left(),
+            self.top_left(),
+        ]
+    }
+
+    fn draw_around(positions: impl IntoIterator<Item = Position<Self::C>>) -> Self {
+        let mut aabb = Self {
+            low_x: C::default(),
+            low_y: C::default(),
+            high_x: C::default(),
+            high_y: C::default(),
+        };
+
+        for position in positions.into_iter() {
+            if position.x < aabb.low_x {
+                aabb.low_x = position.x;
+            } else if position.x > aabb.high_x {
+                aabb.high_x = position.x;
+            }
+
+            if position.y < aabb.low_y {
+                aabb.low_y = position.y;
+            } else if position.y > aabb.high_y {
+                aabb.high_y = position.y;
+            }
+        }
+
+        aabb
+    }
+
+    fn contains(&self, position: Position<Self::C>) -> bool {
+        (self.low_x < position.x)
+            & (self.low_y < position.y)
+            & (self.high_x > position.x)
+            & (self.high_y > position.y)
+    }
+
+    fn intersects(&self, other: Self) -> Intersects {
+        if (self.low_x > other.high_x)
+            | (other.low_x > self.high_x)
+            | (self.low_y > other.high_y)
+            | (other.low_y > self.high_y)
+        {
+            Intersects::No
+        } else {
+            Intersects::Yes
+        }
+    }
+
+    fn clamp(&self, position: Position<Self::C>) -> Position<Self::C> {
+        let mut new_position = position;
+
+        if position.x < self.low_x {
+            new_position.x = self.low_x;
+        } else if position.x > self.high_x {
+            new_position.x = self.high_x;
+        }
+
+        if position.y < self.low_y {
+            new_position.y = self.low_y;
+        } else if position.y > self.high_y {
+            new_position.y = self.high_y;
+        }
+
+        new_position
+    }
 }
 
 impl<C: Coordinate> AxisAlignedBoundingBox<C> {
