@@ -130,9 +130,9 @@ pub mod discrete_coordinates {
         }
     }
 
-    impl Into<f32> for OrthogonalGrid {
-        fn into(self) -> f32 {
-            self.0 as f32
+    impl From<OrthogonalGrid> for f32 {
+        fn from(coordinate: OrthogonalGrid) -> f32 {
+            coordinate.0 as f32
         }
     }
 
@@ -250,9 +250,9 @@ mod conversions {
         }
     }
 
-    impl<T: Into<f32>> Into<Direction> for Position<T> {
-        fn into(self) -> Direction {
-            let vec2: Vec2 = self.into();
+    impl<T: Into<f32>> From<Position<T>> for Direction {
+        fn from(position: Position<T>) -> Direction {
+            let vec2: Vec2 = position.into();
 
             Direction::new(vec2)
         }
