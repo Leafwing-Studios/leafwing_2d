@@ -334,7 +334,7 @@ mod direction {
 
 mod conversions {
     use super::{Direction, NearOriginInput, Rotation};
-    use bevy_math::Vec2;
+    use bevy_math::{Quat, Vec2};
 
     impl From<Rotation> for Direction {
         fn from(rotation: Rotation) -> Direction {
@@ -373,6 +373,41 @@ mod conversions {
     impl From<Direction> for Vec2 {
         fn from(direction: Direction) -> Vec2 {
             direction.unit_vector()
+        }
+    }
+
+    impl TryFrom<Quat> for Rotation {
+        type Error = NearOriginInput;
+
+        fn try_from(quaternion: Quat) -> Result<Rotation, NearOriginInput> {
+            let direction: Direction = quaternion.into();
+            direction.try_into()
+        }
+    }
+
+    impl From<Rotation> for Quat {
+        fn from(rotation: Rotation) -> Self {
+            Quat::from_rotation_z(rotation.into_radians())
+        }
+    }
+
+    impl From<Quat> for Direction {
+        fn from(quaternion: Quat) -> Self {
+            let vec3 = quaternion.xyz();
+            Direction::new(vec3.truncate())
+        }
+    }
+
+    impl TryFrom<Direction> for Quat {
+        type Error = NearOriginInput;
+
+        fn try_from(direction: Direction) -> Result<Quat, NearOriginInput> {
+            let maybe_rotation: Result<Rotation, NearOriginInput> = direction.try_into();
+            if let Ok(rotation) = maybe_rotation {
+                Ok(rotation.into())
+            } else {
+                Err(NearOriginInput)
+            }
         }
     }
 }

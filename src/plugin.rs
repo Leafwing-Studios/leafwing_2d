@@ -56,7 +56,7 @@ pub enum TwoDimSystem {
     SyncTransform,
 }
 
-impl<C: Send + Sync + 'static + Into<f32>> Plugin for TwoDimPlugin<C> {
+impl<C: Send + Sync + 'static + Into<f32> + Copy> Plugin for TwoDimPlugin<C> {
     fn build(&self, app: &mut App) {
         app.add_system_to_stage(
             CoreStage::PostUpdate,
@@ -98,7 +98,8 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
 /// Synchronizes the [`Rotation`] and [`Position`] of each entity with its [`Transform`]
 ///
 /// z-values of the [`Transform`] translation will not be modified.
-pub fn sync_transform_with_2d<C: Send + Sync + 'static + Into<f32>>(
+/// Any off-axis rotation of the [`Transform`]'s rotation quaternion will be lost.
+pub fn sync_transform_with_2d<C: Send + Sync + 'static + Into<f32> + Copy>(
     mut query: Query<
         (&mut Transform, Option<&Rotation>, Option<&Position<C>>),
         Or<(With<Rotation>, With<Position<C>>)>,
@@ -106,7 +107,7 @@ pub fn sync_transform_with_2d<C: Send + Sync + 'static + Into<f32>>(
 ) {
     for (mut transform, maybe_rotation, maybe_position) in query.iter_mut() {
         if let Some(rotation) = maybe_rotation {
-            let new_quat: Quat = rotation.into();
+            let new_quat: Quat = (*rotation).into();
 
             if transform.rotation != new_quat {
                 transform.rotation = new_quat;
