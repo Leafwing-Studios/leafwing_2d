@@ -173,8 +173,8 @@ mod basic_operations {
 // When relevant, z-values are simply ignored
 mod conversions {
     use super::*;
-    use bevy::math::{Vec2, Vec3};
-    use bevy::transform::components::{GlobalTransform, Transform};
+    use bevy_math::{Vec2, Vec3};
+    use bevy_transform::components::{GlobalTransform, Transform};
 
     impl<T: From<f32>> From<Vec2> for Position<T> {
         fn from(vec: Vec2) -> Self {

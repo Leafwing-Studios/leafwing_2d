@@ -1,12 +1,14 @@
 //! Direction and rotation for spinning around in 2 dimensions
 
-pub use bevy::math::Vec2;
+use bevy_math::Vec2;
+
+pub use direction::Direction;
 pub use rotation::Rotation;
-pub use vec2::Direction;
+
 
 mod rotation {
     use super::conversions::NearOriginInput;
-    use bevy::math::Vec2;
+    use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
     /// A discretized 2-dimensional rotation
@@ -181,11 +183,10 @@ mod rotation {
     }
 }
 
-mod vec2 {
-    use bevy::math::Vec3;
+mod direction {
     use std::f32::consts::SQRT_2;
 
-    use bevy::math::{const_vec2, Vec2};
+    use bevy_math::{const_vec2, Vec2, Vec3};
     use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
     /// A unit direction vector
@@ -328,7 +329,7 @@ mod vec2 {
 
 mod conversions {
     use super::{Direction, Rotation};
-    use bevy::math::Vec2;
+    use bevy_math::Vec2;
 
     /// A [`Vec2`] was supplied that was too close to the origin
     #[derive(Debug, Clone, Copy)]
