@@ -33,14 +33,18 @@ mod rotation {
         /// Creates a new [`Rotation`] from a whole number of tenths of a degree
         ///
         /// Measured clockwise from midnight.
-        pub fn new(deci_degrees: u16) -> Rotation {
+        #[inline]
+        #[must_use]
+        pub const fn new(deci_degrees: u16) -> Rotation {
             Rotation {
                 deci_degrees: deci_degrees % Rotation::FULL_CIRCLE,
             }
         }
 
         /// Returns the absolute distance, as a [`Rotation`], between `self` and `other`
-        pub fn distance(&self, other: Rotation) -> Rotation {
+        #[inline]
+        #[must_use]
+        pub const fn distance(&self, other: Rotation) -> Rotation {
             if self.deci_degrees >= other.deci_degrees {
                 Rotation {
                     deci_degrees: self.deci_degrees - other.deci_degrees,
@@ -84,7 +88,7 @@ mod rotation {
         ///
         /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)), None will be returned instead.
         #[inline]
-        pub fn from_xy(xy: Vec2) -> Result<Rotation, NearOriginInput> {
+        pub const fn from_xy(xy: Vec2) -> Result<Rotation, NearOriginInput> {
             if xy.length_squared() < f32::EPSILON * f32::EPSILON {
                 Err(NearOriginInput)
             } else {
@@ -94,7 +98,9 @@ mod rotation {
         }
 
         /// Converts this direction into an (x, y) pair with magnitude 1
-        pub fn into_xy(self) -> Vec2 {
+        #[inline]
+        #[must_use]
+        pub const fn into_xy(self) -> Vec2 {
             let radians = self.into_radians();
             Vec2::new(radians.cos(), radians.sin())
         }
@@ -102,7 +108,7 @@ mod rotation {
         /// Construct a [`Direction`](crate::orientation::Direction) from radians, measured clockwise from midnight
         #[must_use]
         #[inline]
-        pub fn from_radians(radians: impl Into<f32>) -> Rotation {
+        pub const fn from_radians(radians: impl Into<f32>) -> Rotation {
             use std::f32::consts::TAU;
 
             let normalized_radians: f32 = radians.into().div_euclid(TAU);
@@ -113,14 +119,16 @@ mod rotation {
         }
 
         /// Converts this direction into radians, measured clockwise from midnight
-        pub fn into_radians(self) -> f32 {
+        #[inline]
+        #[must_use]
+        pub const fn into_radians(self) -> f32 {
             self.deci_degrees as f32 * std::f32::consts::TAU / 3600.
         }
 
         /// Construct a [`Direction`](crate::orientation::Direction) from degrees, measured clockwise from midnight
         #[must_use]
         #[inline]
-        pub fn from_degrees(degrees: impl Into<f32>) -> Rotation {
+        pub const fn from_degrees(degrees: impl Into<f32>) -> Rotation {
             let normalized_degrees: f32 = degrees.into().div_euclid(360.0);
 
             Rotation {
@@ -129,7 +137,9 @@ mod rotation {
         }
 
         /// Converts this direction into degrees, measured clockwise from midnight
-        pub fn into_degrees(self) -> f32 {
+        #[inline]
+        #[must_use]
+        pub const fn into_degrees(self) -> f32 {
             self.deci_degrees as f32 / 10.
         }
     }
@@ -208,7 +218,7 @@ mod direction {
         /// The [`Vec2`] will be normalized, or if it is near zero, [`Direction::NEUTRAL`] will be returned instead
         #[must_use]
         #[inline]
-        pub fn new(vec2: Vec2) -> Self {
+        pub const fn new(vec2: Vec2) -> Self {
             Self {
                 unit_vector: vec2.normalize_or_zero(),
             }
@@ -219,7 +229,7 @@ mod direction {
         /// This will always have a magnitude of 1, unless it is [`Direction::NEUTRAL`]
         #[must_use]
         #[inline]
-        pub fn unit_vector(&self) -> Vec2 {
+        pub const fn unit_vector(&self) -> Vec2 {
             self.unit_vector
         }
     }
@@ -421,9 +431,11 @@ pub mod partitioning {
     /// Only `partitions` should be manually defined when implementing this trait for new types.
     pub trait DirectionParitioning: Into<Rotation> + Into<Direction> + Into<Vec2> + Copy {
         /// Returns the vector of possible partitions that can be snapped to
+        #[must_use]
         fn partitions() -> Vec<Self>;
 
         /// Returns a vector of the snappable rotations
+        #[must_use]
         fn rotations() -> Vec<Rotation> {
             Self::partitions()
                 .iter()
@@ -432,6 +444,7 @@ pub mod partitioning {
         }
 
         /// Returns a vector of the snappable directions
+        #[must_use]
         fn directions() -> Vec<Direction> {
             Self::partitions()
                 .iter()
@@ -440,6 +453,7 @@ pub mod partitioning {
         }
 
         /// Returns a vector of the snappable unit vectors
+        #[must_use]
         fn unit_vectors() -> Vec<Vec2> {
             Self::partitions()
                 .iter()
@@ -448,6 +462,7 @@ pub mod partitioning {
         }
 
         /// Snaps to the nearest partition
+        #[must_use]
         fn snap(rotationlike: impl Into<Rotation>) -> Self {
             let rotation = rotationlike.into();
 
@@ -469,11 +484,13 @@ pub mod partitioning {
         }
 
         /// Snaps a [`Rotation`] to the nearest matching discrete [`Rotation`]
+        #[must_use]
         fn snap_rotation(rotation: Rotation) -> Rotation {
             Self::snap(rotation).into()
         }
 
         /// Snaps a [`Direction`] to the nearest matching discrete [`Direction`]
+        #[must_use]
         fn snap_direction(direction: Direction) -> Direction {
             if let Ok(rotation) = direction.try_into() {
                 Self::snap_rotation(rotation).into()
@@ -483,6 +500,7 @@ pub mod partitioning {
         }
 
         /// Snaps a [`Vec2`] to the nearest matching discrete [`Direction`], preserving the magnitude
+        #[must_use]
         fn snap_vec2(vec2: Vec2) -> Vec2 {
             if let Ok(rotation) = vec2.try_into() {
                 Self::snap_rotation(rotation).into()

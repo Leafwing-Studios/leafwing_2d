@@ -47,7 +47,9 @@ pub struct AxisAlignedBoundingBox<C> {
 
 impl<C> AxisAlignedBoundingBox<C> {
     /// Gets the bottom left [`Position`] of this bounding box
-    pub fn bottom_left(&self) -> Position<C> {
+    #[inline]
+    #[must_use]
+    pub const fn bottom_left(&self) -> Position<C> {
         Position {
             x: self.low_x,
             y: self.low_y,
@@ -55,7 +57,9 @@ impl<C> AxisAlignedBoundingBox<C> {
     }
 
     /// Gets the bottom right [`Position`] of this bounding box
-    pub fn bottom_right(&self) -> Position<C> {
+    #[inline]
+    #[must_use]
+    pub const fn bottom_right(&self) -> Position<C> {
         Position {
             x: self.high_x,
             y: self.low_y,
@@ -63,7 +67,9 @@ impl<C> AxisAlignedBoundingBox<C> {
     }
 
     /// Gets the top left [`Position`] of this bounding box
-    pub fn top_left(&self) -> Position<C> {
+    #[inline]
+    #[must_use]
+    pub const fn top_left(&self) -> Position<C> {
         Position {
             x: self.low_x,
             y: self.high_y,
@@ -71,7 +77,9 @@ impl<C> AxisAlignedBoundingBox<C> {
     }
 
     /// Gets the top_right [`Position`] of this bounding box
-    pub fn top_right(&self) -> Position<C> {
+    #[inline]
+    #[must_use]
+    pub const fn top_right(&self) -> Position<C> {
         Position {
             x: self.high_x,
             y: self.high_y,

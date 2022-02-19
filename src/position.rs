@@ -23,18 +23,22 @@ pub struct Position<C> {
 
 impl<C> Position<C> {
     /// Creates a new [`Position`] with the provided `x` and `y` coordinates
-    pub fn new(x: C, y: C) -> Position<C> {
+    #[inline]
+    #[must_use]
+    pub const fn new(x: C, y: C) -> Position<C> {
         Position { x, y }
     }
 
     /// Modifies the [`Position`] so that it is within the provided axis-aligned bounding box
-    pub fn clamp_to_aabb(&mut self, aabb: impl Into<AxisAlignedBoundingBox<C>>) {
+    #[inline]
+    pub const fn clamp_to_aabb(&mut self, aabb: impl Into<AxisAlignedBoundingBox<C>>) {
         let aabb = aabb.into();
         self = aabb.clamp_within(self)
     }
 
     /// Modifies the [`Position`] so that it is within the provided oriented bounding box
-    pub fn clamp_to_obb(&mut self, obb: impl Into<OrientedBoundingBox<C>>) {
+    #[inline]
+    pub const fn clamp_to_obb(&mut self, obb: impl Into<OrientedBoundingBox<C>>) {
         let obb = obb.into();
         self = obb.clamp_within(self)
     }
@@ -42,13 +46,17 @@ impl<C> Position<C> {
 
 impl<T: Sub<Output = T> + Into<f32>> Position<T> {
     /// Gets the direction that points away from this position, towards `other_position`
-    pub fn direction_to(self, other_position: Position<T>) -> Direction {
+    #[inline]
+    #[must_use]
+    pub const fn direction_to(self, other_position: Position<T>) -> Direction {
         let net_position: Position<T> = other_position - self;
         net_position.into()
     }
 
     /// Gets the direction that points towards this position, from `other_position`
-    pub fn direction_from(self, other_position: Position<T>) -> Direction {
+    #[inline]
+    #[must_use]
+    pub const fn direction_from(self, other_position: Position<T>) -> Direction {
         let net_position: Position<T> = self - other_position;
         net_position.into()
     }
@@ -81,6 +89,7 @@ pub mod discrete_coordinates {
         type Parititions: DirectionParitioning;
 
         /// Creates a [`Position`] from the pair of values provided
+        #[must_use]
         fn position(x: Self, y: Self) -> Position<Self> {
             Position { x, y }
         }
@@ -88,6 +97,7 @@ pub mod discrete_coordinates {
         /// Fetches the array of neighboring [`Positions`](Position), in a fixed order
         ///
         /// The order should always be clockwise, starting from north (+y)
+        #[must_use]
         fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS];
 
         /// The [`Direction`] towards each neighbor
@@ -98,6 +108,7 @@ pub mod discrete_coordinates {
         ///
         ///
         /// ```
+        #[must_use]
         fn neighbor_directions() -> [Direction; Self::N_NEIGHBORS] {
             Self::neighbors(Self::ORIGIN).map(|position| position.into())
         }
