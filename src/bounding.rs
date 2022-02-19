@@ -176,5 +176,6 @@ pub struct OrientedBoundingBox<C: Coordinate> {
 /// A 2-dimensional convex hull with coordinate type C
 #[derive(Debug, Component, Clone)]
 pub struct ConvexHull<C: Coordinate> {
-    hull_points: Vec<Position<C>>,
+    /// The points which define a convex region
+    pub hull_points: Vec<Position<C>>,
 }
