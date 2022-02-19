@@ -4,7 +4,7 @@ use crate::orientation::{Direction, Rotation};
 use crate::position::Position;
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
-use bevy_math::{Quat, Vec3};
+use bevy_math::Quat;
 use bevy_transform::components::{GlobalTransform, Transform};
 use std::marker::PhantomData;
 
@@ -56,7 +56,7 @@ pub enum TwoDimSystem {
     SyncTransform,
 }
 
-impl<C: Send + Sync + 'static> Plugin for TwoDimPlugin<C> {
+impl<C: Send + Sync + 'static + Into<f32>> Plugin for TwoDimPlugin<C> {
     fn build(&self, app: &mut App) {
         app.add_system_to_stage(
             CoreStage::PostUpdate,
@@ -96,7 +96,9 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
 }
 
 /// Synchronizes the [`Rotation`] and [`Position`] of each entity with its [`Transform`]
-pub fn sync_transform_with_2d<C: Send + Sync + 'static>(
+///
+/// z-values of the [`Transform`] translation will not be modified.
+pub fn sync_transform_with_2d<C: Send + Sync + 'static + Into<f32>>(
     mut query: Query<
         (&mut Transform, Option<&Rotation>, Option<&Position<C>>),
         Or<(With<Rotation>, With<Position<C>>)>,
@@ -112,10 +114,12 @@ pub fn sync_transform_with_2d<C: Send + Sync + 'static>(
         }
 
         if let Some(&position) = maybe_position {
-            let new_translation: Vec3 = position.into();
+            if transform.translation.x != position.x.into() {
+                transform.translation.x = position.x.into();
+            }
 
-            if transform.translation != new_translation {
-                transform.translation = new_translation;
+            if transform.translation.y != position.y.into() {
+                transform.translation.y = position.y.into();
             }
         }
     }

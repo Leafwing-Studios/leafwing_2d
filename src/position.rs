@@ -242,6 +242,12 @@ mod conversions {
         }
     }
 
+    impl<T: Into<f32>> From<Position<T>> for Vec3 {
+        fn from(position: Position<T>) -> Vec3 {
+            Vec3::new(position.x.into(), position.y.into(), 0.0)
+        }
+    }
+
     impl<T: Into<f32>> Into<Direction> for Position<T> {
         fn into(self) -> Direction {
             let vec2: Vec2 = self.into();
