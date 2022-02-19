@@ -1,5 +1,6 @@
 //! 2-dimensional coordinates
 
+use crate::orientation::Direction;
 use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::{fmt::Debug, ops::*};
 
@@ -16,6 +17,20 @@ pub struct Position<T> {
     pub x: T,
     /// The second coordinate of the position, typically the y-axis
     pub y: T,
+}
+
+impl<T: Sub<Output = T> + Into<f32>> Position<T> {
+    /// Gets the direction that points away from this position, towards `other_position`
+    pub fn direction_to(self, other_position: Position<T>) -> Direction {
+        let net_position: Position<T> = other_position - self;
+        net_position.into()
+    }
+
+    /// Gets the direction that points towards this position, from `other_position`
+    pub fn direction_from(self, other_position: Position<T>) -> Direction {
+        let net_position: Position<T> = self - other_position;
+        net_position.into()
+    }
 }
 
 mod discrete_coordinates {
