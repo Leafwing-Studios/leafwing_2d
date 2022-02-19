@@ -15,11 +15,11 @@ pub use discrete_coordinates::*;
 #[derive(
     Component, Default, Clone, Copy, Debug, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign,
 )]
-pub struct Position<T> {
+pub struct Position<C> {
     /// The first coordinate of the position, typically the x-axis
-    pub x: T,
+    pub x: C,
     /// The second coordinate of the position, typically the y-axis
-    pub y: T,
+    pub y: C,
 }
 
 impl<T: Sub<Output = T> + Into<f32>> Position<T> {
