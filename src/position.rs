@@ -65,20 +65,20 @@ mod discrete_coordinates {
         fn neighbours(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
             [
                 Position {
-                    x: Self(position.x.0 + 0),
+                    x: Self(position.x.0),
                     y: Self(position.y.0 + 1),
                 },
                 Position {
                     x: Self(position.x.0 + 1),
-                    y: Self(position.y.0 + 0),
+                    y: Self(position.y.0),
                 },
                 Position {
-                    x: Self(position.x.0 + 0),
+                    x: Self(position.x.0),
                     y: Self(position.y.0 - 1),
                 },
                 Position {
                     x: Self(position.x.0 - 1),
-                    y: Self(position.y.0 + 0),
+                    y: Self(position.y.0),
                 },
             ]
         }
