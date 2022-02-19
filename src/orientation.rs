@@ -15,7 +15,7 @@ mod rotation {
     ///
     /// Internally, these are stored in normalized tenths of a degree, and so can be cleanly added and reversed
     /// without accumulating error.
-    #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd)]
+    #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default)]
     pub struct Rotation {
         /// Tenth of a degree, measured clockwise from midnight (x=0, y=1)
         ///
