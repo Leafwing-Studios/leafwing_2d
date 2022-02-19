@@ -1,12 +1,12 @@
 //! Structs that bound regions that contain [`Positions`](crate::position::Position)
 
-use crate::position::Position;
+use crate::position::{Coordinate, Position};
 use bevy_ecs::prelude::Component;
 
 /// A 2D region that could contain a [`Position`]
 pub trait BoundingRegion {
     /// The coordinate type of the positions stored in this region
-    type C;
+    type C: Coordinate;
 
     /// Gets the list of vertexes that make up this bounding region
     fn vertexes(&self) -> Vec<Position<Self::C>>;
@@ -49,7 +49,7 @@ pub struct AxisAlignedBoundingBox<C: Clone> {
     pub high_y: C,
 }
 
-impl<C: Clone> AxisAlignedBoundingBox<C> {
+impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     /// Gets the bottom left [`Position`] of this bounding box
     #[inline]
     #[must_use]
@@ -93,7 +93,7 @@ impl<C: Clone> AxisAlignedBoundingBox<C> {
 
 /// A 2-dimensional oriented bounding box with coordinate type C
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
-pub struct OrientedBoundingBox<C> {
+pub struct OrientedBoundingBox<C: Coordinate> {
     low_x: C,
     low_y: C,
     high_x: C,
@@ -102,6 +102,6 @@ pub struct OrientedBoundingBox<C> {
 
 /// A 2-dimensional convex hull with coordinate type C
 #[derive(Debug, Component, Clone)]
-pub struct ConvexHull<C> {
+pub struct ConvexHull<C: Coordinate> {
     hull_points: Vec<Position<C>>,
 }

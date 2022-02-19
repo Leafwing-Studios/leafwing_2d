@@ -1,7 +1,7 @@
 //! Tools for using two-dimensional coordinates within `bevy` games
 
 use crate::orientation::{Direction, Rotation};
-use crate::position::Position;
+use crate::position::{Coordinate, Position};
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_math::Quat;
@@ -13,7 +13,7 @@ use std::marker::PhantomData;
 /// When used with other bundles (like a `SpriteBundle`), be aware that duplicate components (like [`Transform`])
 /// will take the value of the last.
 #[derive(Bundle, Clone, Debug, Default)]
-pub struct TwoDimBundle<C: Send + Sync + 'static> {
+pub struct TwoDimBundle<C: Coordinate> {
     /// The 2-dimensional [`Position`] of the entity
     ///
     /// This is automatically converted into a [`Transform`]'s translation
@@ -36,7 +36,7 @@ pub struct TwoDimBundle<C: Send + Sync + 'static> {
 ///
 /// System labels are stored in [`TwoDimSystem`], which describes the working of this plugin in more depth.
 #[derive(Default, Debug)]
-pub struct TwoDimPlugin<C> {
+pub struct TwoDimPlugin<C: Coordinate> {
     _phantom: PhantomData<C>,
 }
 
@@ -56,9 +56,7 @@ pub enum TwoDimSystem {
     SyncTransform,
 }
 
-impl<C: Send + Sync + 'static + Into<f32> + From<f32> + Copy + PartialEq> Plugin
-    for TwoDimPlugin<C>
-{
+impl<C: Coordinate> Plugin for TwoDimPlugin<C> {
     fn build(&self, app: &mut App) {
         app.add_system_to_stage(
             CoreStage::PostUpdate,
@@ -105,9 +103,7 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
 ///
 /// z-values of the [`Transform`] translation will not be modified.
 /// Any off-axis rotation of the [`Transform`]'s rotation quaternion will be lost.
-pub fn sync_transform_with_2d<
-    C: Send + Sync + 'static + Into<f32> + From<f32> + Clone + PartialEq,
->(
+pub fn sync_transform_with_2d<C: Coordinate>(
     mut query: Query<
         (
             &mut Transform,

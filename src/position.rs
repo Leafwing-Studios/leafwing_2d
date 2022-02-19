@@ -1,6 +1,5 @@
 //! 2-dimensional coordinates
 
-use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion, OrientedBoundingBox};
 use crate::orientation::Direction;
 use bevy_ecs::prelude::Component;
 use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
@@ -14,36 +13,87 @@ use std::{fmt::Debug, ops::*};
 #[derive(
     Component, Default, Clone, Copy, Debug, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign,
 )]
-pub struct Position<C> {
+pub struct Position<C: Coordinate> {
     /// The first coordinate of the position, typically the x-axis
     pub x: C,
     /// The second coordinate of the position, typically the y-axis
     pub y: C,
 }
 
-impl<C> Position<C> {
+impl<C: Coordinate> Position<C> {
     /// Creates a new [`Position`] with the provided `x` and `y` coordinates
     #[inline]
     #[must_use]
-    pub const fn new(x: C, y: C) -> Position<C> {
+    pub fn new(x: C, y: C) -> Position<C> {
         Position { x, y }
     }
 }
 
-impl<T: Sub<Output = T> + Into<f32>> Position<T> {
+/// A type that can be used as a coordinate type for [`Position`]
+///
+/// This trait has a blanket impl for all types that meet its bounds, and so is already implemented for all of the base float and integer types.
+/// Additionally, consider using a [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) type if you are working with a grid-like game,
+/// as it provides several additional useful methods.
+pub trait Coordinate:
+    Copy
+    + Debug
+    + Default
+    + Add<Output = Self>
+    + AddAssign
+    + Sub<Output = Self>
+    + SubAssign
+    + Mul<Output = Self>
+    + MulAssign
+    + Div<Output = Self>
+    + DivAssign
+    + Rem<Output = Self>
+    + RemAssign
+    + PartialOrd
+    + Send
+    + Sync
+    + From<f32>
+    + Into<f32>
+    + 'static
+{
+}
+
+impl<T> Coordinate for T where
+    T: Copy
+        + Debug
+        + Default
+        + Add<Output = Self>
+        + AddAssign
+        + Sub<Output = Self>
+        + SubAssign
+        + Mul<Output = Self>
+        + MulAssign
+        + Div<Output = Self>
+        + DivAssign
+        + Rem<Output = Self>
+        + RemAssign
+        + PartialOrd
+        + Send
+        + Sync
+        + From<f32>
+        + Into<f32>
+        + 'static
+{
+}
+
+impl<C: Coordinate> Position<C> {
     /// Gets the direction that points away from this position, towards `other_position`
     #[inline]
     #[must_use]
-    pub fn direction_to(self, other_position: Position<T>) -> Direction {
-        let net_position: Position<T> = other_position - self;
+    pub fn direction_to(self, other_position: Position<C>) -> Direction {
+        let net_position: Position<C> = other_position - self;
         net_position.into()
     }
 
     /// Gets the direction that points towards this position, from `other_position`
     #[inline]
     #[must_use]
-    pub fn direction_from(self, other_position: Position<T>) -> Direction {
-        let net_position: Position<T> = self - other_position;
+    pub fn direction_from(self, other_position: Position<C>) -> Direction {
+        let net_position: Position<C> = self - other_position;
         net_position.into()
     }
 }
@@ -60,7 +110,7 @@ pub mod discrete_coordinates {
     /// A type that can be used to represent a discrete 2-dimensional coordinate
     ///
     /// Typically used to create and work with [`Positions`](Position)
-    pub trait DiscreteCoordinate: Sized + Into<f32> {
+    pub trait DiscreteCoordinate: Coordinate {
         /// The number of neighbors
         const N_NEIGHBORS: usize;
         /// Adding or subtracting this coordinate to another coordinate does not change the value
@@ -117,9 +167,13 @@ pub mod discrete_coordinates {
         MulAssign,
         Div,
         DivAssign,
+        PartialEq,
+        Default,
+        PartialOrd,
     )]
     pub struct OrthogonalGrid(pub usize);
 
+    /*
     impl DiscreteCoordinate for OrthogonalGrid {
         const N_NEIGHBORS: usize = 4;
         const ZERO: OrthogonalGrid = OrthogonalGrid(0);
@@ -146,10 +200,17 @@ pub mod discrete_coordinates {
             ]
         }
     }
+    */
 
     impl From<OrthogonalGrid> for f32 {
         fn from(coordinate: OrthogonalGrid) -> f32 {
             coordinate.0 as f32
+        }
+    }
+
+    impl From<f32> for OrthogonalGrid {
+        fn from(float: f32) -> OrthogonalGrid {
+            OrthogonalGrid(float.round() as usize)
         }
     }
 
@@ -172,7 +233,7 @@ pub mod discrete_coordinates {
 mod basic_operations {
     use super::*;
 
-    impl<T: Add<Output = T>> Add<Position<T>> for Position<T> {
+    impl<C: Coordinate> Add<Position<C>> for Position<C> {
         type Output = Self;
 
         fn add(self, rhs: Self) -> Self::Output {
@@ -183,7 +244,7 @@ mod basic_operations {
         }
     }
 
-    impl<T: Sub<Output = T>> Sub<Position<T>> for Position<T> {
+    impl<C: Coordinate> Sub<Position<C>> for Position<C> {
         type Output = Self;
 
         fn sub(self, rhs: Self) -> Self::Output {
@@ -194,10 +255,10 @@ mod basic_operations {
         }
     }
 
-    impl<T: Mul<Output = T> + Clone> Mul<T> for Position<T> {
-        type Output = Position<T>;
+    impl<C: Coordinate> Mul<C> for Position<C> {
+        type Output = Position<C>;
 
-        fn mul(self, rhs: T) -> Self::Output {
+        fn mul(self, rhs: C) -> Self::Output {
             Self {
                 x: self.x * rhs.clone(),
                 y: self.y * rhs,
@@ -205,10 +266,10 @@ mod basic_operations {
         }
     }
 
-    impl<T: Div<Output = T> + Clone> Div<T> for Position<T> {
-        type Output = Position<T>;
+    impl<C: Coordinate> Div<C> for Position<C> {
+        type Output = Position<C>;
 
-        fn div(self, rhs: T) -> Self::Output {
+        fn div(self, rhs: C) -> Self::Output {
             Self {
                 x: self.x / rhs.clone(),
                 y: self.y / rhs,
@@ -216,10 +277,10 @@ mod basic_operations {
         }
     }
 
-    impl<T: Rem<Output = T> + Clone> Rem<T> for Position<T> {
-        type Output = Position<T>;
+    impl<C: Coordinate> Rem<C> for Position<C> {
+        type Output = Position<C>;
 
-        fn rem(self, rhs: T) -> Self::Output {
+        fn rem(self, rhs: C) -> Self::Output {
             Self {
                 x: self.x % rhs.clone(),
                 y: self.y % rhs,
@@ -227,8 +288,8 @@ mod basic_operations {
         }
     }
 
-    impl<T: Rem<Output = T>> Rem<Position<T>> for Position<T> {
-        type Output = Position<T>;
+    impl<C: Coordinate> Rem<Position<C>> for Position<C> {
+        type Output = Position<C>;
 
         fn rem(self, rhs: Self) -> Self::Output {
             Self {
@@ -246,8 +307,8 @@ mod conversions {
     use bevy_math::{Vec2, Vec3};
     use bevy_transform::components::{GlobalTransform, Transform};
 
-    impl<T: From<f32>> From<Vec2> for Position<T> {
-        fn from(vec: Vec2) -> Position<T> {
+    impl<C: Coordinate> From<Vec2> for Position<C> {
+        fn from(vec: Vec2) -> Position<C> {
             Position {
                 x: vec.x.into(),
                 y: vec.y.into(),
@@ -255,27 +316,27 @@ mod conversions {
         }
     }
 
-    impl<T: Into<f32>> From<Position<T>> for Vec2 {
-        fn from(position: Position<T>) -> Vec2 {
+    impl<C: Coordinate> From<Position<C>> for Vec2 {
+        fn from(position: Position<C>) -> Vec2 {
             Vec2::new(position.x.into(), position.y.into())
         }
     }
 
-    impl<T: Into<f32>> From<Position<T>> for Vec3 {
-        fn from(position: Position<T>) -> Vec3 {
+    impl<C: Coordinate> From<Position<C>> for Vec3 {
+        fn from(position: Position<C>) -> Vec3 {
             Vec3::new(position.x.into(), position.y.into(), 0.0)
         }
     }
 
-    impl<T: Into<f32>> From<Position<T>> for Direction {
-        fn from(position: Position<T>) -> Direction {
+    impl<C: Coordinate> From<Position<C>> for Direction {
+        fn from(position: Position<C>) -> Direction {
             let vec2: Vec2 = position.into();
 
             Direction::new(vec2)
         }
     }
 
-    impl<T: From<f32>> From<Vec3> for Position<T> {
+    impl<C: Coordinate> From<Vec3> for Position<C> {
         fn from(vec: Vec3) -> Self {
             Self {
                 x: vec.x.into(),
@@ -284,7 +345,7 @@ mod conversions {
         }
     }
 
-    impl<T: From<f32>> From<Transform> for Position<T> {
+    impl<C: Coordinate> From<Transform> for Position<C> {
         fn from(transform: Transform) -> Self {
             Self {
                 x: transform.translation.x.into(),
@@ -293,7 +354,7 @@ mod conversions {
         }
     }
 
-    impl<T: From<f32>> From<GlobalTransform> for Position<T> {
+    impl<C: Coordinate> From<GlobalTransform> for Position<C> {
         fn from(transform: GlobalTransform) -> Self {
             Self {
                 x: transform.translation.x.into(),
