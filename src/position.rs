@@ -11,7 +11,17 @@ use std::{fmt::Debug, ops::*};
 /// whether the coordinate system is hexagonal vs. grid,
 /// continuous or discrete and so on.
 #[derive(
-    Component, Default, Clone, Copy, Debug, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign,
+    Component,
+    Default,
+    Clone,
+    Copy,
+    Debug,
+    AddAssign,
+    SubAssign,
+    MulAssign,
+    DivAssign,
+    RemAssign,
+    PartialEq,
 )]
 pub struct Position<C: Coordinate> {
     /// The first coordinate of the position, typically the x-axis
