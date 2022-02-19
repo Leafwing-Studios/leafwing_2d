@@ -91,12 +91,6 @@ impl<C: Clone> AxisAlignedBoundingBox<C> {
     }
 }
 
-impl<C: Clone> FromIterator<Position<C>> for AxisAlignedBoundingBox<C> {
-    fn from_iter<T>(iter: T) -> Self {
-        todo!()
-    }
-}
-
 /// A 2-dimensional oriented bounding box with coordinate type C
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
 pub struct OrientedBoundingBox<C> {
