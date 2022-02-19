@@ -5,7 +5,6 @@ use bevy_math::Vec2;
 pub use direction::Direction;
 pub use rotation::Rotation;
 
-
 mod rotation {
     use super::conversions::NearOriginInput;
     use bevy_math::Vec2;
