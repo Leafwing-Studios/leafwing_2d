@@ -20,6 +20,13 @@ pub struct Position<C> {
     pub y: C,
 }
 
+impl<C> Position<C> {
+    /// Creates a new [`Position`] with the provided `x` and `y` coordinates
+    pub fn new(x: C, y: C) -> Position<C> {
+        Position { x, y }
+    }
+}
+
 impl<T: Sub<Output = T> + Into<f32>> Position<T> {
     /// Gets the direction that points away from this position, towards `other_position`
     pub fn direction_to(self, other_position: Position<T>) -> Direction {

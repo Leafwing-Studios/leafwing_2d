@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 /// A [`Bundle`] of components that conveniently represents the state of entities living in 2-dimensional space
 ///
 /// When used with other bundles (like a `SpriteBundle`), be aware that duplicate components (like [`Transform`])
-/// will take the value of the last
+/// will take the value of the last.
 #[derive(Bundle, Clone, Debug, Default)]
 pub struct TwoDimBundle<C: Send + Sync + 'static> {
     /// The 2-dimensional [`Position`] of the entity
@@ -56,7 +56,9 @@ pub enum TwoDimSystem {
     SyncTransform,
 }
 
-impl<C: Send + Sync + 'static + Into<f32> + Copy> Plugin for TwoDimPlugin<C> {
+impl<C: Send + Sync + 'static + Into<f32> + From<f32> + Copy + PartialEq> Plugin
+    for TwoDimPlugin<C>
+{
     fn build(&self, app: &mut App) {
         app.add_system_to_stage(
             CoreStage::PostUpdate,
@@ -95,32 +97,82 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
     }
 }
 
-/// Synchronizes the [`Rotation`] and [`Position`] of each entity with its [`Transform`]
+/// Synchronizes the [`Rotation`], [`Direction`] and [`Position`] of each entity with its [`Transform`] and vice versa
+///
+/// The [`Rotation`] and [`Direction`] will be synchronized, with whichever one has been changed taking priority.
+/// If both have been changed, [`Rotation`] will take priority.
+/// If both the [`Transform`] and its 2D analogue have been changed, the 2D version will take priority.
 ///
 /// z-values of the [`Transform`] translation will not be modified.
 /// Any off-axis rotation of the [`Transform`]'s rotation quaternion will be lost.
-pub fn sync_transform_with_2d<C: Send + Sync + 'static + Into<f32> + Copy>(
+pub fn sync_transform_with_2d<
+    C: Send + Sync + 'static + Into<f32> + From<f32> + Clone + PartialEq,
+>(
     mut query: Query<
-        (&mut Transform, Option<&Rotation>, Option<&Position<C>>),
+        (
+            &mut Transform,
+            Option<&mut Rotation>,
+            Option<&mut Direction>,
+            Option<&mut Position<C>>,
+        ),
         Or<(With<Rotation>, With<Position<C>>)>,
     >,
 ) {
-    for (mut transform, maybe_rotation, maybe_position) in query.iter_mut() {
-        if let Some(rotation) = maybe_rotation {
-            let new_quat: Quat = (*rotation).into();
+    for (mut transform, maybe_rotation, maybe_direction, maybe_position) in query.iter_mut() {
+        // Synchronize Rotation with Transform
+        if let Some(mut rotation) = maybe_rotation {
+            if rotation.is_changed() {
+                let new_quat: Quat = (*rotation).into();
 
-            if transform.rotation != new_quat {
-                transform.rotation = new_quat;
+                if transform.rotation != new_quat {
+                    transform.rotation = new_quat;
+                }
+            } else if transform.is_changed() {
+                if let Ok(new_rotation) = transform.rotation.try_into() {
+                    if *rotation != new_rotation {
+                        *rotation = new_rotation;
+                    }
+                }
             }
         }
 
-        if let Some(&position) = maybe_position {
-            if transform.translation.x != position.x.into() {
-                transform.translation.x = position.x.into();
+        // Synchronize Direction with Transform
+        if let Some(mut direction) = maybe_direction {
+            if direction.is_changed() {
+                if let Ok(new_quat) = (*direction).try_into() {
+                    if transform.rotation != new_quat {
+                        transform.rotation = new_quat;
+                    }
+                }
+            } else if transform.is_changed() {
+                if *direction != transform.rotation.into() {
+                    *direction = transform.rotation.into();
+                }
             }
+        }
 
-            if transform.translation.y != position.y.into() {
-                transform.translation.y = position.y.into();
+        // Synchronize Position with Transform
+        if let Some(mut position) = maybe_position {
+            if position.is_changed() {
+                let new_x: f32 = position.x.clone().into();
+                if transform.translation.x != new_x {
+                    transform.translation.x = new_x;
+                }
+
+                let new_y: f32 = position.y.clone().into();
+                if transform.translation.y != new_y {
+                    transform.translation.y = new_y;
+                }
+            } else if transform.is_changed() {
+                let new_x: C = transform.translation.x.into();
+                if position.x != new_x {
+                    position.x = new_x;
+                }
+
+                let new_y: C = transform.translation.y.into();
+                if position.y != new_y {
+                    position.y = new_y;
+                }
             }
         }
     }
