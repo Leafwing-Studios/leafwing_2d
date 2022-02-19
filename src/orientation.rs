@@ -74,7 +74,7 @@ mod rotation {
 
     // Conversion methods
     impl Rotation {
-        /// Constructs a [`Direction`] from an (x,y) Euclidean coordinate
+        /// Constructs a [`Direction`](crate::orientation::Direction) from an (x,y) Euclidean coordinate
         ///
         /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)), None will be returned instead.
         #[inline]
@@ -93,7 +93,7 @@ mod rotation {
             Vec2::new(radians.cos(), radians.sin())
         }
 
-        /// Construct a [`Direction`] from radians, measured clockwise from midnight
+        /// Construct a [`Direction`](crate::orientation::Direction) from radians, measured clockwise from midnight
         #[must_use]
         #[inline]
         pub fn from_radians(radians: impl Into<f32>) -> Rotation {
@@ -111,7 +111,7 @@ mod rotation {
             self.deci_degrees as f32 * std::f32::consts::TAU / 3600.
         }
 
-        /// Construct a [`Direction`] from degrees, measured clockwise from midnight
+        /// Construct a [`Direction`](crate::orientation::Direction) from degrees, measured clockwise from midnight
         #[must_use]
         #[inline]
         pub fn from_degrees(degrees: impl Into<f32>) -> Rotation {
