@@ -1,12 +1,17 @@
 //! Direction and rotation for spinning around in 2 dimensions
 
 use bevy_math::Vec2;
+use derive_more::{Display, Error};
 
 pub use direction::Direction;
 pub use rotation::Rotation;
 
+/// A [`Vec2`] was supplied that was too close to the origin
+#[derive(Debug, Clone, Copy, Error, Display)]
+pub struct NearOriginInput;
+
 mod rotation {
-    use super::conversions::NearOriginInput;
+    use super::NearOriginInput;
     use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
@@ -328,12 +333,8 @@ mod direction {
 }
 
 mod conversions {
-    use super::{Direction, Rotation};
+    use super::{Direction, NearOriginInput, Rotation};
     use bevy_math::Vec2;
-
-    /// A [`Vec2`] was supplied that was too close to the origin
-    #[derive(Debug, Clone, Copy)]
-    pub struct NearOriginInput;
 
     impl From<Rotation> for Direction {
         fn from(rotation: Rotation) -> Direction {
