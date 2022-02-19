@@ -3,10 +3,13 @@
 Baffled by quaternions?
 Tired of writing `struct Position(x,y);` boilerplate?
 Wish that there was a simple way to work with grids?
+Just want to know if two axis-aligned bounding boxes intersect?
 
 Try out `leafwing_2d` for a simple, well-tested, and fully integrated solution to these problems!
 
 Like always, made with Leafwing Studios' trademark `#![forbid(missing_docs)]`.
+
+WARNING: this crate is currently nightly-only, as it relies on `#![feature(generic_const_exprs)]` to provide an efficient generic API to fetch cell neighbours.
 
 ## Instructions
 
