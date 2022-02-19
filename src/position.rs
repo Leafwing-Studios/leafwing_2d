@@ -19,14 +19,26 @@ pub struct Position<T> {
 }
 
 mod discrete_coordinates {
+    use crate::orientation::{CardinalQuadrant, Direction, DirectionParitioning};
+
     use super::*;
 
     /// A type that can be used to represent a discrete 2-dimensional coordinate
     ///
     /// Typically used to create and work with [`Positions`](Position)
-    pub trait DiscreteCoordinate: Sized {
+    pub trait DiscreteCoordinate: Sized + Into<f32> {
         /// The number of neighbors
         const N_NEIGHBORS: usize;
+        /// Adding or subtracting this coordinate to another coordinate does not change the value
+        const ZERO: Self;
+        /// The (0, 0) cell [`Position`]
+        const ORIGIN: Position<Self> = Position {
+            x: Self::ZERO,
+            y: Self::ZERO,
+        };
+
+        /// The [`DirectionParitioning`] that determines how [`Directions`](Direction) should map to neighbors
+        type Parititions: DirectionParitioning;
 
         /// Creates a [`Position`] from the pair of values provided
         fn position(x: Self, y: Self) -> Position<Self> {
@@ -36,7 +48,19 @@ mod discrete_coordinates {
         /// Fetches the array of neighboring [`Positions`](Position), in a fixed order
         ///
         /// The order should always be clockwise, starting from north (+y)
-        fn neighbours(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS];
+        fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS];
+
+        /// The [`Direction`] towards each neighbor
+        ///
+        /// The order should always be clockwise, starting from north (+y)
+        ///
+        /// ```rust
+        ///
+        ///
+        /// ```
+        fn neighbor_directions() -> [Direction; Self::N_NEIGHBORS] {
+            Self::neighbors(Self::ORIGIN).map(|position| position.into())
+        }
     }
 
     /// [`DiscreteCoordinate`] primitive for a square grid, where each cell has four neighbors
@@ -61,8 +85,10 @@ mod discrete_coordinates {
 
     impl DiscreteCoordinate for OrthogonalGrid {
         const N_NEIGHBORS: usize = 4;
+        const ZERO: OrthogonalGrid = OrthogonalGrid(0);
+        type Parititions = CardinalQuadrant;
 
-        fn neighbours(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
+        fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
             [
                 Position {
                     x: Self(position.x.0),
@@ -81,6 +107,12 @@ mod discrete_coordinates {
                     y: Self(position.y.0),
                 },
             ]
+        }
+    }
+
+    impl Into<f32> for OrthogonalGrid {
+        fn into(self) -> f32 {
+            self.0 as f32
         }
     }
 
@@ -173,15 +205,30 @@ mod basic_operations {
 // When relevant, z-values are simply ignored
 mod conversions {
     use super::*;
+    use crate::orientation::Direction;
     use bevy_math::{Vec2, Vec3};
     use bevy_transform::components::{GlobalTransform, Transform};
 
     impl<T: From<f32>> From<Vec2> for Position<T> {
-        fn from(vec: Vec2) -> Self {
-            Self {
+        fn from(vec: Vec2) -> Position<T> {
+            Position {
                 x: vec.x.into(),
                 y: vec.y.into(),
             }
+        }
+    }
+
+    impl<T: Into<f32>> From<Position<T>> for Vec2 {
+        fn from(position: Position<T>) -> Vec2 {
+            Vec2::new(position.x.into(), position.y.into())
+        }
+    }
+
+    impl<T: Into<f32>> Into<Direction> for Position<T> {
+        fn into(self) -> Direction {
+            let vec2: Vec2 = self.into();
+
+            Direction::new(vec2)
         }
     }
 
