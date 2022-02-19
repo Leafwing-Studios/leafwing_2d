@@ -1,5 +1,6 @@
 //! 2-dimensional coordinates
 
+use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion, OrientedBoundingBox};
 use crate::orientation::Direction;
 use bevy_ecs::prelude::Component;
 use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
@@ -24,6 +25,18 @@ impl<C> Position<C> {
     /// Creates a new [`Position`] with the provided `x` and `y` coordinates
     pub fn new(x: C, y: C) -> Position<C> {
         Position { x, y }
+    }
+
+    /// Modifies the [`Position`] so that it is within the provided axis-aligned bounding box
+    pub fn clamp_to_aabb(&mut self, aabb: impl Into<AxisAlignedBoundingBox<C>>) {
+        let aabb = aabb.into();
+        self = aabb.clamp_within(self)
+    }
+
+    /// Modifies the [`Position`] so that it is within the provided oriented bounding box
+    pub fn clamp_to_obb(&mut self, obb: impl Into<OrientedBoundingBox<C>>) {
+        let obb = obb.into();
+        self = obb.clamp_within(self)
     }
 }
 

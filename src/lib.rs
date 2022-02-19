@@ -5,12 +5,14 @@
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
 
+pub mod bounding;
 pub mod orientation;
 pub mod plugin;
 pub mod position;
 
 /// The most commonly useful bits of the library
 pub mod prelude {
+    pub use crate::bounding::BoundingRegion;
     pub use crate::orientation::{Direction, Rotation};
     pub use crate::plugin::{TwoDimBundle, TwoDimPlugin};
     pub use crate::position::Position;
