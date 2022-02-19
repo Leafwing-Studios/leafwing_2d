@@ -7,6 +7,7 @@ pub use rotation::Rotation;
 
 mod rotation {
     use super::conversions::NearOriginInput;
+    use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
@@ -14,7 +15,7 @@ mod rotation {
     ///
     /// Internally, these are stored in normalized tenths of a degree, and so can be cleanly added and reversed
     /// without accumulating error.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd)]
+    #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd)]
     pub struct Rotation {
         /// Tenth of a degree, measured clockwise from midnight (x=0, y=1)
         ///
@@ -183,15 +184,15 @@ mod rotation {
 }
 
 mod direction {
-    use std::f32::consts::SQRT_2;
-
+    use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
     use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
+    use std::f32::consts::SQRT_2;
 
     /// A unit direction vector
     ///
     /// Its magnitude is always either zero or  one.
-    #[derive(Clone, Copy, Debug, PartialEq, Default)]
+    #[derive(Component, Clone, Copy, Debug, PartialEq, Default)]
     pub struct Direction {
         unit_vector: Vec2,
     }

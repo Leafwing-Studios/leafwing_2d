@@ -1,6 +1,7 @@
 //! 2-dimensional coordinates
 
 use crate::orientation::Direction;
+use bevy_ecs::prelude::Component;
 use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::{fmt::Debug, ops::*};
 
@@ -11,7 +12,9 @@ pub use discrete_coordinates::*;
 /// The underlying data type `T` can be modified to control
 /// whether the coordinate system is hexagonal vs. grid,
 /// continuous or discrete and so on.
-#[derive(Default, Clone, Copy, Debug, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign)]
+#[derive(
+    Component, Default, Clone, Copy, Debug, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign,
+)]
 pub struct Position<T> {
     /// The first coordinate of the position, typically the x-axis
     pub x: T,
