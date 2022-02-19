@@ -14,7 +14,7 @@ pub use discrete_coordinates::*;
 pub struct Position<T> {
     /// The first coordinate of the position, typically the x-axis
     pub x: T,
-    /// The first coordinate of the position, typically the y-axis
+    /// The second coordinate of the position, typically the y-axis
     pub y: T,
 }
 
