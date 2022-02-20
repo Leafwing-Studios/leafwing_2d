@@ -503,7 +503,7 @@ mod direction {
 
 mod conversions {
     use super::{Direction, NearlySingularConversion, Rotation};
-    use bevy_math::{Quat, Vec2};
+    use bevy_math::{Quat, Vec2, Vec3};
 
     impl From<Rotation> for Direction {
         fn from(rotation: Rotation) -> Direction {
@@ -585,7 +585,9 @@ mod conversions {
     /// ```
     impl From<Quat> for Direction {
         fn from(quaternion: Quat) -> Self {
-            let vec3 = quaternion.xyz();
+            // +Y is the default direction, we need to rotate it by the quaternion
+            // in order to receive the new direction
+            let vec3 = quaternion.mul_vec3(Vec3::Y);
             Direction::new(vec3.truncate())
         }
     }
