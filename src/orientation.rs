@@ -77,7 +77,7 @@ mod rotation {
             }
         }
 
-        /// Rotates `self` towards `target` by up to `max_rotation
+        /// Rotates `self` towards `target` by up to `max_rotation`
         #[inline]
         pub fn rotate_towards(&mut self, target: Rotation, max_rotation: Rotation) {
             if self.distance(target) <= max_rotation {

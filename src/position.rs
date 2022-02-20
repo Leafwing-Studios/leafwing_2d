@@ -267,7 +267,7 @@ mod basic_operations {
 
         fn mul(self, rhs: C) -> Self::Output {
             Self {
-                x: self.x * rhs.clone(),
+                x: self.x * rhs,
                 y: self.y * rhs,
             }
         }
@@ -278,7 +278,7 @@ mod basic_operations {
 
         fn div(self, rhs: C) -> Self::Output {
             Self {
-                x: self.x / rhs.clone(),
+                x: self.x / rhs,
                 y: self.y / rhs,
             }
         }
@@ -289,7 +289,7 @@ mod basic_operations {
 
         fn rem(self, rhs: C) -> Self::Output {
             Self {
-                x: self.x % rhs.clone(),
+                x: self.x % rhs,
                 y: self.y % rhs,
             }
         }

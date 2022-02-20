@@ -140,22 +140,20 @@ pub fn sync_transform_with_2d<C: Coordinate>(
                         transform.rotation = new_quat;
                     }
                 }
-            } else if transform.is_changed() {
-                if *direction != transform.rotation.into() {
-                    *direction = transform.rotation.into();
-                }
+            } else if transform.is_changed() && *direction != transform.rotation.into() {
+                *direction = transform.rotation.into();
             }
         }
 
         // Synchronize Position with Transform
         if let Some(mut position) = maybe_position {
             if position.is_changed() {
-                let new_x: f32 = position.x.clone().into();
+                let new_x: f32 = position.x.into();
                 if transform.translation.x != new_x {
                     transform.translation.x = new_x;
                 }
 
-                let new_y: f32 = position.y.clone().into();
+                let new_y: f32 = position.y.into();
                 if transform.translation.y != new_y {
                     transform.translation.y = new_y;
                 }

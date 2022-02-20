@@ -127,8 +127,8 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[must_use]
     pub fn bottom_left(&self) -> Position<C> {
         Position {
-            x: self.low_x.clone(),
-            y: self.low_y.clone(),
+            x: self.low_x,
+            y: self.low_y,
         }
     }
 
@@ -137,8 +137,8 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[must_use]
     pub fn bottom_right(&self) -> Position<C> {
         Position {
-            x: self.high_x.clone(),
-            y: self.low_y.clone(),
+            x: self.high_x,
+            y: self.low_y,
         }
     }
 
@@ -147,18 +147,18 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[must_use]
     pub fn top_left(&self) -> Position<C> {
         Position {
-            x: self.low_x.clone(),
-            y: self.high_y.clone(),
+            x: self.low_x,
+            y: self.high_y,
         }
     }
 
-    /// Gets the top_right [`Position`] of this bounding box
+    /// Gets the top right [`Position`] of this bounding box
     #[inline]
     #[must_use]
     pub fn top_right(&self) -> Position<C> {
         Position {
-            x: self.high_x.clone(),
-            y: self.high_y.clone(),
+            x: self.high_x,
+            y: self.high_y,
         }
     }
 }
