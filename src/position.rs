@@ -7,6 +7,10 @@ use derive_more::{
 };
 use std::{fmt::Debug, ops::*};
 
+/// A float could not be converted into a [`Coordinate`]
+#[derive(Debug, Clone, Copy, Error, Display)]
+pub struct FloatCoordinateConversionError;
+
 /// A 2-dimensional coordinate
 ///
 /// The underlying data type `T` can be modified to control
@@ -53,9 +57,13 @@ impl<C: Coordinate> Position<C> {
 
 /// A type that can be used as a coordinate type for [`Position`]
 ///
-/// This trait has a blanket impl for all types that impl [`TryFrom<f32>`], and so is already implemented for all of the base float and integer types.
-/// Additionally, consider using a [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) type if you are working with a grid-like game,
-/// as it provides several additional useful methods.
+/// This trait has a blanket impl for all types that impl [`TryFrom<f32>`], and so is already implemented for all of the base float types.
+///
+/// If you are working with a grid-like position system, use one of the types provided in [`discrete_coordinates`] type
+/// (or your own [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) type),
+/// rather than a raw integer type.
+/// We cannot impl this trait for those types due to conflicting impls,
+/// and additional functionality is provided by the [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) trait.
 pub trait Coordinate:
     Copy
     + Debug
@@ -79,10 +87,6 @@ pub trait Coordinate:
     /// Attempt to create a [`Coordinate`] from a `f32`, as might be returned by [`Transform`](bevy_transform::components::Transform)
     fn try_from_f32(float: f32) -> Result<Self, FloatCoordinateConversionError>;
 }
-
-/// A float could not be converted into a [`Coordinate`]
-#[derive(Debug, Clone, Copy, Error, Display)]
-pub struct FloatCoordinateConversionError;
 
 impl<T> Coordinate for T
 where
@@ -157,6 +161,11 @@ impl<C: Coordinate> Position<C> {
 }
 
 /// Coordinate types for [`Position`] designed for operation on discrete grids
+///
+/// The provided types all store an `isize` under the hood for maximum flexbility.
+/// If you require a different storage type,
+/// please feel free to copy-paste the relevant struct def and trait impls into your game
+/// and modify `isize` to your desired integer type.
 pub mod discrete_coordinates {
     use crate::orientation::{partitioning::DirectionParitioning, Direction};
 
@@ -226,7 +235,7 @@ pub mod discrete_coordinates {
         Default,
         PartialOrd,
     )]
-    pub struct OrthogonalGrid(pub usize);
+    pub struct OrthogonalGrid(pub isize);
 
     /*
     impl DiscreteCoordinate for OrthogonalGrid {
@@ -265,24 +274,24 @@ pub mod discrete_coordinates {
 
     impl From<f32> for OrthogonalGrid {
         fn from(float: f32) -> OrthogonalGrid {
-            OrthogonalGrid(float.round() as usize)
+            OrthogonalGrid(float.round() as isize)
         }
     }
 
     /// [`DiscreteCoordinate`] primitive for a square grid, where each cell has eight neighbors
     ///
     /// Neighboring tiles are a king's move away: either touching faces or diagonally adjacent
-    pub struct AdjacentGrid(pub usize);
+    pub struct AdjacentGrid(pub isize);
 
     /// [`DiscreteCoordinate`] primitive for a hexagonal grid, where each cell points sideways
     ///
     /// These hexes tile vertically, but not horizontally
-    pub struct FlatHex(pub usize);
+    pub struct FlatHex(pub isize);
 
     /// [`DiscreteCoordinate`] primitive for a hexagonal grid, where each cell points up
     ///
     /// These hexes tile horizontally, but not vertically
-    pub struct PointyHex(pub usize);
+    pub struct PointyHex(pub isize);
 }
 
 mod basic_operations {
