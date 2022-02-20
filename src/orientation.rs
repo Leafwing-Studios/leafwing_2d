@@ -66,7 +66,7 @@ pub struct NearlySingularConversion;
 
 /// A direction that a [`Rotation`] can be applied in
 ///
-/// /// # Example
+/// # Example
 /// ```rust
 /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
 ///
@@ -171,10 +171,19 @@ mod rotation {
         }
 
         /// Which direction is the shortest to rotate towards to reach `target_rotation`?
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
+        ///
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::NORTH), RotationDirection::Clockwise);
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::EAST), RotationDirection::Clockwise);
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::WEST), RotationDirection::CounterClockwise);
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::SOUTH), RotationDirection::Clockwise);
+        /// ```
         #[inline]
         #[must_use]
         pub const fn rotation_direction(&self, target: Rotation) -> RotationDirection {
-            if self.distance(target).deci_degrees >= Rotation::FULL_CIRCLE / 2 {
+            if self.distance(target).deci_degrees <= Rotation::FULL_CIRCLE / 2 {
                 RotationDirection::Clockwise
             } else {
                 RotationDirection::CounterClockwise
