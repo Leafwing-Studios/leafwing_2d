@@ -591,13 +591,6 @@ mod conversions {
         }
     }
 
-    /// # Example
-    /// ```rust
-    /// use bevy_math::Quat;
-    /// use leafwing_2d::orientation::{Rotation, NearlySingularConversion};
-    ///
-    /// assert_eq!(Rotation::from(Quat::from_rotation_z(0.0)), Rotation::NORTH);
-    /// ```
     impl From<Quat> for Rotation {
         fn from(quaternion: Quat) -> Rotation {
             let direction: Direction = quaternion.into();
@@ -605,30 +598,12 @@ mod conversions {
         }
     }
 
-    /// # Example
-    /// ```rust
-    /// use bevy_math::Quat;
-    /// use leafwing_2d::orientation::Rotation;
-    ///
-    /// assert!(Quat::from(Rotation::from_radians(0.0)).abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
-    /// assert!(Quat::from(Rotation::from_radians(43.7)).abs_diff_eq(Quat::from_rotation_z(43.7), 0.01));
-    /// ```
     impl From<Rotation> for Quat {
         fn from(rotation: Rotation) -> Self {
             Quat::from_rotation_z(rotation.into_radians())
         }
     }
 
-    /// # Example
-    /// ```rust
-    /// use bevy_math::Quat;
-    /// use leafwing_2d::orientation::{Direction, Rotation};
-    /// use core::f32::consts::TAU;
-    /// const ROTATION_TOL: Rotation = Rotation::new(5);
-    ///
-    /// assert_eq!(Direction::from(Quat::from_rotation_z(0.0)), Direction::NORTH);
-    /// assert!(Direction::WEST.distance(Direction::from(Quat::from_rotation_z(-TAU/4.0))).unwrap() <= ROTATION_TOL);
-    /// ```
     impl From<Quat> for Direction {
         fn from(quaternion: Quat) -> Self {
             // +Y is the default direction, we need to rotate it by the quaternion
@@ -638,15 +613,6 @@ mod conversions {
         }
     }
 
-    /// # Example
-    /// ```rust
-    /// use bevy_math::Quat;
-    /// use leafwing_2d::orientation::{Direction, NearlySingularConversion};
-    /// use core::f32::consts::TAU;
-    ///
-    /// assert!(Quat::from(Direction::NORTH).abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
-    /// assert!(Quat::from(Direction::WEST).abs_diff_eq(Quat::from_rotation_z(-TAU/4.0), 0.01));
-    /// ```
     impl From<Direction> for Quat {
         fn from(direction: Direction) -> Quat {
             let rotation: Rotation = direction.into();
