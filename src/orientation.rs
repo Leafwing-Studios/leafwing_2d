@@ -10,7 +10,7 @@ pub use rotation::Rotation;
 ///
 /// This error is produced when attempting to convert into a rotation-like type
 /// such as a [`Rotation`] or [`Quat`](bevy::math::Quat) from a vector-like type
-/// such as a [`Direction`] or [`Vec2`].
+/// such as a [`Vec2`].
 ///
 /// In almost all cases, the correct way to handle this error is to simply not change the rotation.
 #[derive(Debug, Clone, Copy, Error, Display, PartialEq, Eq)]
@@ -176,10 +176,10 @@ mod rotation {
 
     // Conversion methods
     impl Rotation {
-        /// Constructs a [`Direction`](crate::orientation::Direction) from an (x,y) Euclidean coordinate
+        /// Constructs a [`Rotation`](crate::orientation::Direction) from an (x,y) Euclidean coordinate
         ///
         /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)),
-        /// [`None`] will be returned instead.
+        /// [`Err(NearlySingularConversion)`] will be returned instead.
         ///
         /// # Example
         /// ```rust
@@ -320,22 +320,17 @@ mod direction {
     use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
     use std::f32::consts::SQRT_2;
 
-    /// A unit direction vector
+    /// A 2D unit vector that represents a direction
     ///
-    /// Its magnitude is always either zero or  one.
+    /// Its magnitude is always one.
     ///
     /// # Example
     /// ```rust
     /// use leafwing_2d::orientation::Direction;
     /// use bevy::math::Vec2;
     ///
-    /// assert_eq!(Direction::NEUTRAL, Vec2::ZERO.into());
     /// assert_eq!(Direction::NORTH.unit_vector(), Vec2::new(0.0, 1.0));
-    /// assert_eq!(Direction::from(Vec2::ONE), Direction::NORTHEAST);
-    ///
-    /// assert_eq!(Direction::WEST + Direction::EAST, Direction::NEUTRAL);
-    /// assert!(Direction::WEST - Direction::EAST != Direction::NEUTRAL);
-    /// assert!(Direction::WEST + Direction::EAST + Direction::WEST != Direction::NEUTRAL);
+    /// assert_eq!(Direction::try_from(Vec2::ONE), Ok(Direction::NORTHEAST));
     ///
     /// assert_eq!(Direction::SOUTH * 3.0, Vec2::new(0.0, -3.0));
     /// assert_eq!(Direction::EAST / 2.0, Vec2::new(0.5, 0.0));
@@ -348,12 +343,19 @@ mod direction {
     impl Direction {
         /// Creates a new [`Direction`] from a [`Vec2`]
         ///
-        /// The [`Vec2`] will be normalized, or if it is near zero, [`Direction::NEUTRAL`] will be returned instead
+        /// The [`Vec2`] will be normalized to have a magnitude of 1.
+        ///
+        /// # Panics
+        /// Panics if the supplied vector has length zero.
         #[must_use]
         #[inline]
         pub fn new(vec2: Vec2) -> Self {
+            if vec2.length_squared() == 0.0 {
+                panic!("Supplied a Vec2 with length 0 to a Direction.")
+            };
+
             Self {
-                unit_vector: vec2.normalize_or_zero(),
+                unit_vector: vec2.normalize(),
             }
         }
 
@@ -366,12 +368,10 @@ mod direction {
             self.unit_vector
         }
 
-        /// Returns the absolute distance between `self` and `other` as a [`Rotation`] if possible
-        ///
-        /// Returns [`Err(NearlySingularConversion)`] if either `self` or `other` is [`Direction::NEUTRAL`].
+        /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
         pub fn distance(&self, other: Direction) -> Result<Rotation, NearlySingularConversion> {
-            let self_rotation: Rotation = (*self).try_into()?;
-            let other_rotation: Rotation = other.try_into()?;
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation: Rotation = other.into();
 
             Ok(self_rotation.distance(other_rotation))
         }
@@ -379,13 +379,6 @@ mod direction {
 
     // Constants
     impl Direction {
-        /// The neutral direction, which does not point anywhere
-        ///
-        /// This is the only constructable value with a magnitude other than 1.
-        pub const NEUTRAL: Direction = Direction {
-            unit_vector: Vec2::ZERO,
-        };
-
         /// The direction that points straight up
         pub const NORTH: Direction = Direction {
             unit_vector: const_vec2!([0.0, 1.0]),
@@ -511,11 +504,10 @@ mod conversions {
         }
     }
 
-    impl TryFrom<Direction> for Rotation {
-        type Error = NearlySingularConversion;
-
-        fn try_from(direction: Direction) -> Result<Rotation, NearlySingularConversion> {
-            Rotation::from_xy(direction.unit_vector())
+    impl From<Direction> for Rotation {
+        fn from(direction: Direction) -> Rotation {
+            let radians = f32::atan2(direction.unit_vector().x, direction.unit_vector().y);
+            Rotation::from_radians(radians)
         }
     }
 
@@ -533,9 +525,15 @@ mod conversions {
         }
     }
 
-    impl From<Vec2> for Direction {
-        fn from(vec2: Vec2) -> Direction {
-            Direction::new(vec2)
+    impl TryFrom<Vec2> for Direction {
+        type Error = NearlySingularConversion;
+
+        fn try_from(vec2: Vec2) -> Result<Direction, NearlySingularConversion> {
+            if vec2.length_squared() == 0.0 {
+                Err(NearlySingularConversion)
+            } else {
+                Ok(Direction::new(vec2))
+            }
         }
     }
 
@@ -550,15 +548,12 @@ mod conversions {
     /// use bevy_math::Quat;
     /// use leafwing_2d::orientation::{Rotation, NearlySingularConversion};
     ///
-    /// assert_eq!(Rotation::try_from(Quat::from_rotation_z(0.0)), Ok(Rotation::NORTH));
-    /// assert_eq!(Rotation::try_from(Quat::IDENTITY), Err(NearlySingularConversion));
+    /// assert_eq!(Rotation::from(Quat::from_rotation_z(0.0)), Rotation::NORTH);
     /// ```
-    impl TryFrom<Quat> for Rotation {
-        type Error = NearlySingularConversion;
-
-        fn try_from(quaternion: Quat) -> Result<Rotation, NearlySingularConversion> {
+    impl From<Quat> for Rotation {
+        fn from(quaternion: Quat) -> Rotation {
             let direction: Direction = quaternion.into();
-            direction.try_into()
+            direction.into()
         }
     }
 
@@ -601,20 +596,13 @@ mod conversions {
     /// use leafwing_2d::orientation::{Direction, NearlySingularConversion};
     /// use core::f32::consts::TAU;
     ///
-    /// assert!(Quat::try_from(Direction::NORTH).unwrap().abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
-    /// assert!(Quat::try_from(Direction::WEST).unwrap().abs_diff_eq(Quat::from_rotation_z(-TAU/4.0), 0.01));
-    /// assert_eq!(Quat::try_from(Direction::NEUTRAL), Err(NearlySingularConversion));
+    /// assert!(Quat::from(Direction::NORTH).abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
+    /// assert!(Quat::from(Direction::WEST).abs_diff_eq(Quat::from_rotation_z(-TAU/4.0), 0.01));
     /// ```
-    impl TryFrom<Direction> for Quat {
-        type Error = NearlySingularConversion;
-
-        fn try_from(direction: Direction) -> Result<Quat, NearlySingularConversion> {
-            let maybe_rotation: Result<Rotation, NearlySingularConversion> = direction.try_into();
-            if let Ok(rotation) = maybe_rotation {
-                Ok(rotation.into())
-            } else {
-                Err(NearlySingularConversion)
-            }
+    impl From<Direction> for Quat {
+        fn from(direction: Direction) -> Quat {
+            let rotation: Rotation = direction.into();
+            rotation.into()
         }
     }
 }
@@ -689,14 +677,12 @@ pub mod partitioning {
         /// Snaps a [`Direction`] to the nearest matching discrete [`Direction`]
         #[must_use]
         fn snap_direction(direction: Direction) -> Direction {
-            if let Ok(rotation) = direction.try_into() {
-                Self::snap_rotation(rotation).into()
-            } else {
-                Direction::NEUTRAL
-            }
+            Self::snap_rotation(direction.into()).into()
         }
 
         /// Snaps a [`Vec2`] to the nearest matching discrete [`Direction`], preserving the magnitude
+        ///
+        /// If `vec2` has zero length, `Vec2::ZERO` will be returned instead.
         #[must_use]
         fn snap_vec2(vec2: Vec2) -> Vec2 {
             if let Ok(rotation) = vec2.try_into() {

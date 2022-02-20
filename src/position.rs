@@ -124,17 +124,23 @@ impl<C: Coordinate> Position<C> {
     /// Gets the [`Direction`] that points away from this position, towards `other_position`
     #[inline]
     #[must_use]
-    pub fn direction_to(self, other_position: Position<C>) -> Direction {
+    pub fn direction_to(
+        self,
+        other_position: Position<C>,
+    ) -> Result<Direction, NearlySingularConversion> {
         let net_position: Position<C> = other_position - self;
-        net_position.into()
+        net_position.try_into()
     }
 
     /// Gets the [`Direction`] that points towards this position, from `other_position`
     #[inline]
     #[must_use]
-    pub fn direction_from(self, other_position: Position<C>) -> Direction {
+    pub fn direction_from(
+        self,
+        other_position: Position<C>,
+    ) -> Result<Direction, NearlySingularConversion> {
         let net_position: Position<C> = self - other_position;
-        net_position.into()
+        net_position.try_into()
     }
 
     /// Gets the [`Rotation`] that points away from this position, towards `other_position`
@@ -210,7 +216,11 @@ pub mod discrete_coordinates {
         /// ```
         #[must_use]
         fn neighbor_directions() -> [Direction; Self::N_NEIGHBORS] {
-            Self::neighbors(Self::ORIGIN).map(|position| position.into())
+            Self::neighbors(Self::ORIGIN).map(|position| {
+                position
+                    .try_into()
+                    .expect("The positions of the neighbors cannot be (0,0).")
+            })
         }
     }
 
@@ -394,11 +404,13 @@ mod conversions {
         }
     }
 
-    impl<C: Coordinate> From<Position<C>> for Direction {
-        fn from(position: Position<C>) -> Direction {
+    impl<C: Coordinate> TryFrom<Position<C>> for Direction {
+        type Error = NearlySingularConversion;
+
+        fn try_from(position: Position<C>) -> Result<Direction, NearlySingularConversion> {
             let vec2: Vec2 = position.into();
 
-            Direction::new(vec2)
+            vec2.try_into()
         }
     }
 

@@ -178,7 +178,7 @@ fn snap_to_player_system(
 
     for (mut enemy_rotation, enemy_position) in query.iter_mut() {
         // do not rotate the enemy if the player is directly on top of them
-        if let Ok(rotation_to_player) = enemy_position.direction_to(player_position).try_into() {
+        if let Ok(rotation_to_player) = enemy_position.rotation_to(player_position) {
             // rotate the enemy to face the player
             *enemy_rotation = rotation_to_player;
         }

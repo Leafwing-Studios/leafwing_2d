@@ -25,7 +25,7 @@ fn orientation_alignment() {
     let origin = Position::default();
 
     let rotation = origin.rotation_to(due_north).unwrap();
-    let direction = origin.direction_to(due_north);
+    let direction = origin.direction_to(due_north).unwrap();
 
     assert_eq!(rotation, Rotation::NORTH);
     assert_eq!(direction, Direction::NORTH);
@@ -79,9 +79,6 @@ fn direction_rotation_conversion() {
             .unwrap()
             <= ROTATION_TOL
     );
-
-    let neutral_result: Result<Rotation, NearlySingularConversion> = Direction::NEUTRAL.try_into();
-    assert!(neutral_result.is_err());
 }
 
 fn assert_conversions_match(target_position: Position<f32>) {
@@ -93,16 +90,16 @@ fn assert_conversions_match(target_position: Position<f32>) {
 
     origin_transform.look_at(target_vec3, Vec3::Z);
 
-    let direction = origin.direction_to(target_position);
+    let direction = origin.direction_to(target_position).unwrap();
     let rotation = origin.rotation_to(target_position).unwrap();
     let quat = origin_transform.rotation;
 
     let rotation_direction = Direction::from(rotation);
-    let direction_rotation = Rotation::try_from(direction).unwrap();
-    let direction_quat = Quat::try_from(direction).unwrap();
-    let rotation_quat = Quat::try_from(rotation).unwrap();
+    let direction_rotation = Rotation::from(direction);
+    let direction_quat = Quat::from(direction);
+    let rotation_quat = Quat::from(rotation);
     let quat_direction = Direction::from(quat);
-    let quat_rotation = Rotation::try_from(quat).unwrap();
+    let quat_rotation = Rotation::from(quat);
 
     dbg!(direction);
     dbg!(rotation_direction);
