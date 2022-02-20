@@ -34,6 +34,38 @@ pub enum Intersects {
 }
 
 /// A 2-dimensional axis-aligned bounding box with coordinate type C
+///
+/// # Examples
+/// ```rust
+/// use leafwing_2d::{bounding::AxisAlignedBoundingBox, position::Position};
+///
+/// let positions: Vec<Position<i8>> = vec![
+///         Position::new(0,0),
+///         Position::new(-1, 1),
+///         Position::new(3, 4),
+///         Position::new(-1, 17),
+///     ];
+///
+/// let aabb = AxisAlignedBoundingBox::<i8> {
+///     low_x: -1,
+///     low_y: 1,
+///     high_x: 3,
+///     high_y: 17,
+/// }
+///
+/// assert_eq!(aabb, AxisAlignBoundingBox::draw_around(positions));
+///
+/// for position in positions {
+///     assert!(aabb.contains(position));
+/// }
+///
+/// let outlier = Position::new(42, 42);
+/// assert!(!aabb.contains(outlier));
+///
+/// let clamped_outlier = aabb.clamp(position);
+/// assert_eq!(clamped_outlier, aabb.top_right());
+/// assert!(aabb.contains(clamped_outlier))
+/// ```
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
 pub struct AxisAlignedBoundingBox<C: Coordinate> {
     /// The left extent of the bounding box

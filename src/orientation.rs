@@ -6,28 +6,73 @@ use derive_more::{Display, Error};
 pub use direction::Direction;
 pub use rotation::Rotation;
 
-/// A [`Vec2`] was supplied that was too close to the origin
+/// The supplied vector-like struct was too close to zero to be converted into a rotation-like type
+///
+/// This error is produced when attempting to convert into a rotation-like type
+/// such as a [`Rotation`] or [`Quat`](bevy::math::Quat) from a vector-like type
+/// such as a [`Direction`] or [`Vec2`].
+///
+/// In almost all cases, the correct way to handle this error is to simply not change the rotation.
 #[derive(Debug, Clone, Copy, Error, Display)]
-pub struct NearOriginInput;
+pub struct NearlySingularConversion;
 
 /// A direction of rotation
+///
+/// /// # Example
+/// ```rust
+/// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
+///
+/// let origin = Position::default();
+/// let player_position = Postion::<f32>::new(10.0, 4.0);
+///
+/// let due_north = Rotation::default();
+///
+/// // Points SSW
+/// let rotation_to_origin = player_position.rotation_towards(origin);
+/// let rotation_direction = rotation_to_origin.rotation_direction(due_north);
+///
+/// assert_eq!(rotation_direction, RotationDirection::CounterClockwise)
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RotationDirection {
     /// Corresponds to a positive rotation
     Clockwise,
     /// Corresponds to a negative rotation
-    Counterclockwise,
+    CounterClockwise,
 }
 
 mod rotation {
-    use super::{NearOriginInput, RotationDirection};
+    use super::{NearlySingularConversion, RotationDirection};
     use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
-    use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
+    use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
 
     /// A discretized 2-dimensional rotation
     ///
     /// Internally, these are stored in normalized tenths of a degree, and so can be cleanly added and reversed
     /// without accumulating error.
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::orientation::Rotation;
+    /// use core::f32::consts::{PI, TAU};
+    ///
+    /// let three_o_clock = Rotation::from_degrees(90.0);
+    /// let six_o_clock = Rotation::from_radians(PI);
+    /// let nine_o_clock = Rotation::from_degrees(-90.0);
+    ///
+    /// assert_eq!(Rotation::default(), Rotation::from_radians(TAU));
+    /// assert_eq!(Rotation::default(), 500.0 * Rotation::from_radians(TAU));
+    ///
+    /// assert_eq!(three_o_clock + six_o_clock, nine_o_clock);
+    /// assert_eq!(nine_o_clock - three_o_clock, six_o_clock);
+    /// assert_eq!(2 * nine_o_clock, six_o_clock);
+    /// assert_eq!(six_o_clock / 2, three_o_clock);
+    ///
+    /// assert_eq!(six_o_clock, Rotation::SOUTH);
+    ///
+    /// assert_eq!(nine_o_clock.into(), Direction::WEST);
+    /// ```
     #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default)]
     pub struct Rotation {
         /// Tenth of a degree, measured clockwise from midnight (x=0, y=1)
@@ -73,7 +118,7 @@ mod rotation {
             if target.deci_degrees - self.deci_degrees > Rotation::FULL_CIRCLE / 2 {
                 RotationDirection::Clockwise
             } else {
-                RotationDirection::Counterclockwise
+                RotationDirection::CounterClockwise
             }
         }
 
@@ -243,6 +288,23 @@ mod direction {
     /// A unit direction vector
     ///
     /// Its magnitude is always either zero or  one.
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::orientation::Direction;
+    /// use bevy::math::Vec2;
+    ///
+    /// assert_eq!(Direction::NEUTRAL, Vec2::ZERO.into());
+    /// assert_eq!(Direction::NORTH.unit_vector(), Vec2::new(0.0, 1.0));
+    /// assert_eq!(Vec2::ONE.into(), Direction::NORTHEAST);
+    ///
+    /// assert_eq!(Direction::WEST + Direction::EAST, Direction::NEUTRAL);
+    /// assert_eq!(Direction::WEST - Direction::EAST, Direction::NEUTRAL);
+    /// assert!(Direction::WEST + Direction::EAST + Direction::WEST != Direction::NEUTRAL);
+    ///
+    /// assert_eq!(Direction::SOUTH * 3.0, Vec2::new(0.0, -3.0));
+    /// assert_eq!(Direction::EAST / 2.0, Vec2::new(0.5, 0.0));
+    /// ```
     #[derive(Component, Clone, Copy, Debug, PartialEq, Default)]
     pub struct Direction {
         unit_vector: Vec2,

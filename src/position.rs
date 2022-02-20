@@ -10,6 +10,16 @@ use std::{fmt::Debug, ops::*};
 /// The underlying data type `T` can be modified to control
 /// whether the coordinate system is hexagonal vs. grid,
 /// continuous or discrete and so on.
+///
+/// # Example
+/// ```rust
+/// use leafwing_2d::position::Position;
+/// let origin = Position::default();
+/// let player_position = Postion::<f32>::new(10.0, 4.0);
+///
+/// assert_eq!(player_position + origin, player_position);
+/// assert_eq!(player_position - origin, player_position);
+/// ```
 #[derive(
     Component,
     Default,
