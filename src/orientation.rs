@@ -23,12 +23,12 @@ pub struct NearlySingularConversion;
 /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
 ///
 /// let origin = Position::default();
-/// let player_position = Postion::<f32>::new(10.0, 4.0);
+/// let player_position = Position::<f32>::new(10.0, 4.0);
 ///
 /// let due_north = Rotation::default();
 ///
 /// // Points SSW
-/// let rotation_to_origin = player_position.rotation_towards(origin);
+/// let rotation_to_origin = player_position.rotation_to(origin).expect("These two points are distinct.");
 /// let rotation_direction = rotation_to_origin.rotation_direction(due_north);
 ///
 /// assert_eq!(rotation_direction, RotationDirection::CounterClockwise)
@@ -54,24 +54,25 @@ mod rotation {
     ///
     /// # Example
     /// ```rust
-    /// use leafwing_2d::orientation::Rotation;
+    /// use leafwing_2d::orientation::{Rotation, Direction};
     /// use core::f32::consts::{PI, TAU};
     ///
     /// let three_o_clock = Rotation::from_degrees(90.0);
     /// let six_o_clock = Rotation::from_radians(PI);
     /// let nine_o_clock = Rotation::from_degrees(-90.0);
     ///
+    /// assert_eq!(Rotation::default(), Rotation::from_radians(0.0));
     /// assert_eq!(Rotation::default(), Rotation::from_radians(TAU));
     /// assert_eq!(Rotation::default(), 500.0 * Rotation::from_radians(TAU));
     ///
     /// assert_eq!(three_o_clock + six_o_clock, nine_o_clock);
     /// assert_eq!(nine_o_clock - three_o_clock, six_o_clock);
-    /// assert_eq!(2 * nine_o_clock, six_o_clock);
-    /// assert_eq!(six_o_clock / 2, three_o_clock);
+    /// assert_eq!(2.0 * nine_o_clock, six_o_clock);
+    /// assert_eq!(six_o_clock / 2.0, three_o_clock);
     ///
     /// assert_eq!(six_o_clock, Rotation::SOUTH);
     ///
-    /// assert_eq!(nine_o_clock.into(), Direction::WEST);
+    /// assert_eq!(Direction::from(nine_o_clock), Direction::WEST);
     /// ```
     #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default)]
     pub struct Rotation {
@@ -310,10 +311,10 @@ mod direction {
     ///
     /// assert_eq!(Direction::NEUTRAL, Vec2::ZERO.into());
     /// assert_eq!(Direction::NORTH.unit_vector(), Vec2::new(0.0, 1.0));
-    /// assert_eq!(Vec2::ONE.into(), Direction::NORTHEAST);
+    /// assert_eq!(Direction::from(Vec2::ONE), Direction::NORTHEAST);
     ///
     /// assert_eq!(Direction::WEST + Direction::EAST, Direction::NEUTRAL);
-    /// assert_eq!(Direction::WEST - Direction::EAST, Direction::NEUTRAL);
+    /// assert!(Direction::WEST - Direction::EAST != Direction::NEUTRAL);
     /// assert!(Direction::WEST + Direction::EAST + Direction::WEST != Direction::NEUTRAL);
     ///
     /// assert_eq!(Direction::SOUTH * 3.0, Vec2::new(0.0, -3.0));
@@ -374,19 +375,19 @@ mod direction {
 
         /// The direction that points halfway between up and right
         pub const NORTHEAST: Direction = Direction {
-            unit_vector: const_vec2!([SQRT_2, SQRT_2]),
+            unit_vector: const_vec2!([SQRT_2 / 2.0, SQRT_2 / 2.0]),
         };
         /// The direction that points halfway between down and right
         pub const SOUTHEAST: Direction = Direction {
-            unit_vector: const_vec2!([SQRT_2, -SQRT_2]),
+            unit_vector: const_vec2!([SQRT_2 / 2.0, -SQRT_2 / 2.0]),
         };
         /// The direction that points halfway between down and left
         pub const SOUTHWEST: Direction = Direction {
-            unit_vector: const_vec2!([-SQRT_2, -SQRT_2]),
+            unit_vector: const_vec2!([-SQRT_2 / 2.0, -SQRT_2 / 2.0]),
         };
         /// The direction that points halfway between left and up
         pub const NORTHWEST: Direction = Direction {
-            unit_vector: const_vec2!([-SQRT_2, SQRT_2]),
+            unit_vector: const_vec2!([-SQRT_2 / 2.0, SQRT_2 / 2.0]),
         };
     }
 

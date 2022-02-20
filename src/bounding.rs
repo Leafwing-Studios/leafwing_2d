@@ -37,32 +37,33 @@ pub enum Intersects {
 ///
 /// # Examples
 /// ```rust
-/// use leafwing_2d::{bounding::AxisAlignedBoundingBox, position::Position};
+/// use leafwing_2d::bounding::{AxisAlignedBoundingBox, BoundingRegion};
+/// use leafwing_2d::position::Position;
 ///
-/// let positions: Vec<Position<i8>> = vec![
-///         Position::new(0,0),
-///         Position::new(-1, 1),
-///         Position::new(3, 4),
-///         Position::new(-1, 17),
+/// let positions: Vec<Position<f32>> = vec![
+///         Position::new(0.0, 0.0),
+///         Position::new(-1.0, 1.0),
+///         Position::new(3.0, 4.0),
+///         Position::new(-1.0, 17.0),
 ///     ];
 ///
-/// let aabb = AxisAlignedBoundingBox::<i8> {
-///     low_x: -1,
-///     low_y: 1,
-///     high_x: 3,
-///     high_y: 17,
-/// }
+/// let aabb = AxisAlignedBoundingBox::<f32> {
+///     low_x: -1.0,
+///     low_y: 0.0,
+///     high_x: 3.0,
+///     high_y: 17.0,
+/// };
 ///
-/// assert_eq!(aabb, AxisAlignBoundingBox::draw_around(positions));
+/// assert_eq!(aabb, AxisAlignedBoundingBox::draw_around(positions.iter().cloned()));
 ///
 /// for position in positions {
 ///     assert!(aabb.contains(position));
 /// }
 ///
-/// let outlier = Position::new(42, 42);
+/// let outlier = Position::new(42.0, 42.0);
 /// assert!(!aabb.contains(outlier));
 ///
-/// let clamped_outlier = aabb.clamp(position);
+/// let clamped_outlier = aabb.clamp(outlier);
 /// assert_eq!(clamped_outlier, aabb.top_right());
 /// assert!(aabb.contains(clamped_outlier))
 /// ```
@@ -116,10 +117,10 @@ impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
     }
 
     fn contains(&self, position: Position<Self::C>) -> bool {
-        (self.low_x < position.x)
-            & (self.low_y < position.y)
-            & (self.high_x > position.x)
-            & (self.high_y > position.y)
+        (self.low_x <= position.x)
+            & (self.low_y <= position.y)
+            & (self.high_x >= position.x)
+            & (self.high_y >= position.y)
     }
 
     fn intersects(&self, other: Self) -> Intersects {
