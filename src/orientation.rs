@@ -105,9 +105,9 @@ mod rotation {
             self.deci_degrees
         }
 
-        /// Returns the absolute distance, as a [`Rotation`], between `self` and `other`
+        /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
         ///
-        /// Simply subtract the two rotations if you want a signed
+        /// Simply subtract the two rotations if you want a signed value instead.
         #[inline]
         #[must_use]
         pub const fn distance(&self, other: Rotation) -> Rotation {
@@ -305,6 +305,7 @@ mod rotation {
 }
 
 mod direction {
+    use super::{rotation::Rotation, NearlySingularConversion};
     use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
     use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
@@ -354,6 +355,16 @@ mod direction {
         #[inline]
         pub const fn unit_vector(&self) -> Vec2 {
             self.unit_vector
+        }
+
+        /// Returns the absolute distance between `self` and `other` as a [`Rotation`] if possible
+        ///
+        /// Returns [`Err(NearlySingularConversion)`] if either `self` or `other` is [`Direction::NEUTRAL`].
+        pub fn distance(&self, other: Direction) -> Result<Rotation, NearlySingularConversion> {
+            let self_rotation: Rotation = (*self).try_into()?;
+            let other_rotation: Rotation = other.try_into()?;
+
+            Ok(self_rotation.distance(other_rotation))
         }
     }
 
