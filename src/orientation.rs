@@ -10,8 +10,16 @@ pub use rotation::Rotation;
 #[derive(Debug, Clone, Copy, Error, Display)]
 pub struct NearOriginInput;
 
+/// A direction of rotation
+pub enum RotationDirection {
+    /// Corresponds to a positive rotation
+    Clockwise,
+    /// Corresponds to a negative rotation
+    Counterclockwise,
+}
+
 mod rotation {
-    use super::NearOriginInput;
+    use super::{NearOriginInput, RotationDirection};
     use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
@@ -42,6 +50,8 @@ mod rotation {
         }
 
         /// Returns the absolute distance, as a [`Rotation`], between `self` and `other`
+        ///
+        /// Simply subtract the two rotations if you want a signed
         #[inline]
         #[must_use]
         pub const fn distance(&self, other: Rotation) -> Rotation {
@@ -52,6 +62,32 @@ mod rotation {
             } else {
                 Rotation {
                     deci_degrees: other.deci_degrees - self.deci_degrees,
+                }
+            }
+        }
+
+        /// Which direction is the shortest to rotate towards to reach `target_rotation`?
+        #[inline]
+        #[must_use]
+        pub const fn rotation_direction(&self, target: Rotation) -> RotationDirection {
+            if target.deci_degrees - self.deci_degrees > Rotation::FULL_CIRCLE / 2 {
+                RotationDirection::Clockwise
+            } else {
+                RotationDirection::Counterclockwise
+            }
+        }
+
+        /// Rotates `self` towards `target` by up to `max_rotation
+        #[inline]
+        pub fn rotate_towards(&mut self, target: Rotation, max_rotation: Rotation) {
+            if self.distance(target) <= max_rotation {
+                *self = target;
+            } else {
+                match self.rotation_direction(target) {
+                    RotationDirection::Clockwise => self.deci_degrees += max_rotation.deci_degrees,
+                    RotationDirection::Counterclockwise => {
+                        self.deci_degrees -= max_rotation.deci_degrees
+                    }
                 }
             }
         }

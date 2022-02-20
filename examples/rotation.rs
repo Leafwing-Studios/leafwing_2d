@@ -3,18 +3,25 @@
 //! This is a direct conversion of https://github.com/bevyengine/bevy/blob/main/examples/2d/rotation.rs
 //! Used under the MIT License courtesy of Bevy contributors
 
-use bevy::{
-    core::FixedTimestep,
-    math::{const_vec2, Vec3Swizzles},
-    prelude::*,
-};
+use bevy::{core::FixedTimestep, math::const_vec2, prelude::*};
+use leafwing_2d::{bounding::AxisAlignedBoundingBox, prelude::*};
+// This is part of the prelude of leafwing_2d, but clashes with the `bevy` version :/
+use leafwing_2d::orientation::Direction;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
+const PLAY_AREA: AxisAlignedBoundingBox<f32> = AxisAlignedBoundingBox {
+    low_x: -600.0,
+    low_y: -320.0,
+    high_x: 600.0,
+    high_y: 320.0,
+};
+
 const BOUNDS: Vec2 = const_vec2!([1200.0, 640.0]);
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugin(TwoDimPlugin::<f32>::default())
         .add_startup_system(setup)
         .add_system_set(
             SystemSet::new()
@@ -73,6 +80,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: ship_handle,
             ..Default::default()
         })
+        .insert(Position::<f32>::default())
+        .insert(Direction::default())
+        .insert(Rotation::default())
         .insert(Player {
             movement_speed: 500.0,                  // metres per second
             rotation_speed: f32::to_radians(360.0), // degrees per second
@@ -82,34 +92,38 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(SpriteBundle {
             texture: enemy_a_handle.clone(),
-            transform: Transform::from_xyz(0.0 - horizontal_margin, 0.0, 0.0),
             ..Default::default()
         })
+        .insert(Position::<f32>::default())
+        .insert(Rotation::default())
         .insert(SnapToPlayer);
     commands
         .spawn_bundle(SpriteBundle {
             texture: enemy_a_handle,
-            transform: Transform::from_xyz(0.0, 0.0 - vertical_margin, 0.0),
             ..Default::default()
         })
+        .insert(Position::<f32>::new(0.0, -vertical_margin))
+        .insert(Rotation::default())
         .insert(SnapToPlayer);
 
     // enemy that rotates to face the player enemy spawns on the top and right
     commands
         .spawn_bundle(SpriteBundle {
             texture: enemy_b_handle.clone(),
-            transform: Transform::from_xyz(0.0 + horizontal_margin, 0.0, 0.0),
             ..Default::default()
         })
+        .insert(Position::<f32>::new(horizontal_margin, 0.0))
+        .insert(Rotation::default())
         .insert(RotateToPlayer {
             rotation_speed: f32::to_radians(45.0), // degrees per second
         });
     commands
         .spawn_bundle(SpriteBundle {
             texture: enemy_b_handle,
-            transform: Transform::from_xyz(0.0, 0.0 + vertical_margin, 0.0),
             ..Default::default()
         })
+        .insert(Position::<f32>::new(0.0, vertical_margin))
+        .insert(Rotation::default())
         .insert(RotateToPlayer {
             rotation_speed: f32::to_radians(90.0), // degrees per second
         });
@@ -118,9 +132,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 /// Demonstrates applying rotation and movement based on keyboard input.
 fn player_movement_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Player, &mut Transform)>,
+    mut query: Query<(&Player, &mut Position<f32>, &Direction, &mut Rotation)>,
 ) {
-    let (ship, mut transform) = query.single_mut();
+    let (ship, mut position, &direction, mut rotation) = query.single_mut();
 
     let mut rotation_factor = 0.0;
     let mut movement_factor = 0.0;
@@ -138,119 +152,69 @@ fn player_movement_system(
     }
 
     // create the change in rotation around the Z axis (perpendicular to the 2D plane of the screen)
-    let rotation_delta = Quat::from_rotation_z(rotation_factor * ship.rotation_speed * TIME_STEP);
+    let rotation_delta = Rotation::from_radians(rotation_factor * ship.rotation_speed * TIME_STEP);
     // update the ship rotation with our rotation delta
-    transform.rotation *= rotation_delta;
+    *rotation += rotation_delta;
 
-    // get the ship's forward vector by applying the current rotation to the ships initial facing vector
-    let movement_direction = transform.rotation * Vec3::Y;
     // get the distance the ship will move based on direction, the ship's movement speed and delta time
     let movement_distance = movement_factor * ship.movement_speed * TIME_STEP;
     // create the change in translation using the new movement direction and distance
-    let translation_delta = movement_direction * movement_distance;
+    let translation_delta = direction * movement_distance;
     // update the ship translation with our new translation delta
-    transform.translation += translation_delta;
+    *position += translation_delta.into();
 
     // bound the ship within the invisible level bounds
-    let extents = Vec3::from((BOUNDS / 2.0, 0.0));
-    transform.translation = transform.translation.min(extents).max(-extents);
+    *position = PLAY_AREA.clamp(*position);
 }
 
 /// Demonstrates snapping the enemy ship to face the player ship immediately.
 fn snap_to_player_system(
-    mut query: Query<&mut Transform, (With<SnapToPlayer>, Without<Player>)>,
-    player_query: Query<&Transform, With<Player>>,
+    mut query: Query<(&mut Rotation, &Position<f32>), (With<SnapToPlayer>, Without<Player>)>,
+    player_query: Query<&Position<f32>, With<Player>>,
 ) {
-    let player_transform = player_query.single();
-    // get the player translation in 2D
-    let player_translation = player_transform.translation.xy();
+    let &player_position = player_query.single();
 
-    for mut enemy_transform in query.iter_mut() {
-        // get the vector from the enemy ship to the player ship in 2D and normalize it.
-        let to_player = (player_translation - enemy_transform.translation.xy()).normalize();
-
-        // get the quaternion to rotate from the initial enemy facing direction to the direction
-        // facing the player
-        let rotate_to_player = Quat::from_rotation_arc(Vec3::Y, Vec3::from((to_player, 0.0)));
-
-        // rotate the enemy to face the player
-        enemy_transform.rotation = rotate_to_player;
+    for (mut enemy_rotation, enemy_position) in query.iter_mut() {
+        // do not rotate the enemy if the player is directly on top of them
+        if let Ok(rotation_to_player) = enemy_position.direction_to(player_position).try_into() {
+            // rotate the enemy to face the player
+            *enemy_rotation = rotation_to_player;
+        }
     }
 }
 
 /// Demonstrates rotating an enemy ship to face the player ship at a given rotation speed.
 ///
-/// This method uses the vector dot product to determine if the enemy is facing the player and
-/// if not, which way to rotate to face the player. The dot product on two unit length vectors
-/// will return a value between -1.0 and +1.0 which tells us the following about the two vectors:
-///
-/// * If the result is 1.0 the vectors are pointing in the same direction, the angle between them
-///   is 0 degrees.
-/// * If the result is 0.0 the vectors are perpendicular, the angle between them is 90 degrees.
-/// * If the result is -1.0 the vectors are parallel but pointing in opposite directions, the angle
-///   between them is 180 degrees.
-/// * If the result is positive the vectors are pointing in roughly the same direction, the angle
-///   between them is greater than 0 and less than 90 degrees.
-/// * If the result is negative the vectors are pointing in roughly opposite directions, the angle
-///   between them is greater than 90 and less than 180 degrees.
-///
-/// It is possible to get the angle by taking the arc cosine (`acos`) of the dot product. It is
-/// often unnecessary to do this though. Beware than `acos` will return `NaN` if the input is less
-/// than -1.0 or greater than 1.0. This can happen even when working with unit vectors due to
-/// floating point precision loss, so it pays to clamp your dot product value before calling
-/// `acos`.
+/// This system simply uses the `direction_to` and `rotate_towards` methods to perform the required computations.
 fn rotate_to_player_system(
-    mut query: Query<(&RotateToPlayer, &mut Transform), Without<Player>>,
-    player_query: Query<&Transform, With<Player>>,
+    mut query: Query<(&RotateToPlayer, &mut Rotation, &Position<f32>), Without<Player>>,
+    player_query: Query<&Position<f32>, With<Player>>,
 ) {
-    let player_transform = player_query.single();
-    // get the player translation in 2D
-    let player_translation = player_transform.translation.xy();
+    let &player_position = player_query.single();
 
-    for (config, mut enemy_transform) in query.iter_mut() {
-        // get the enemy ship forward vector in 2D (already unit length)
-        let enemy_forward = (enemy_transform.rotation * Vec3::Y).xy();
+    for (config, mut enemy_rotation, enemy_position) in query.iter_mut() {
+        // determine the direction towards the player
+        let direction_to_player = enemy_position.direction_to(player_position);
+        let maybe_rotation_to_player = direction_to_player.try_into();
 
-        // get the vector from the enemy ship to the player ship in 2D and normalize it.
-        let to_player = (player_translation - enemy_transform.translation.xy()).normalize();
-
-        // get the dot product between the enemy forward vector and the direction to the player.
-        let forward_dot_player = enemy_forward.dot(to_player);
-
-        // if the dot product is approximately 1.0 then the enemy is already facing the player and
-        // we can early out.
-        if (forward_dot_player - 1.0).abs() < f32::EPSILON {
+        // if the player is on top of the enemy, we can early out
+        if maybe_rotation_to_player.is_err() {
             continue;
         }
 
-        // get the right vector of the enemy ship in 2D (already unit length)
-        let enemy_right = (enemy_transform.rotation * Vec3::X).xy();
+        let rotation_to_player: Rotation = maybe_rotation_to_player.unwrap();
 
-        // get the dot product of the enemy right vector and the direction to the player ship.
-        // if the dot product is negative them we need to rotate counter clockwise, if it is
-        // positive we need to rotate clockwise. Note that `copysign` will still return 1.0 if the
-        // dot product is 0.0 (because the player is directly behind the enemy, so perpendicular
-        // with the right vector).
-        let right_dot_player = enemy_right.dot(to_player);
+        // if the rotation is already correct then the enemy is already facing the player and
+        // we can early out
+        // note that `Rotation` is discretized, so we can check for exact equality
+        if *enemy_rotation == rotation_to_player {
+            continue;
+        }
 
-        // determine the sign of rotation from the right dot player. We need to negate the sign
-        // here as the 2D bevy co-ordinate system rotates around +Z, which is pointing out of the
-        // screen. Due to the right hand rule, positive rotation around +Z is counter clockwise and
-        // negative is clockwise.
-        let rotation_sign = -f32::copysign(1.0, right_dot_player);
+        // compute the maximum amount that this entity is allowed to turn in this time step
+        let max_rotation = Rotation::from_radians(config.rotation_speed * TIME_STEP);
 
-        // limit rotation so we don't overshoot the target. We need to convert our dot product to
-        // an angle here so we can get an angle of rotation to clamp against.
-        let max_angle = forward_dot_player.clamp(-1.0, 1.0).acos(); // clamp acos for safety
-
-        // calculate angle of rotation with limit
-        let rotation_angle = rotation_sign * (config.rotation_speed * TIME_STEP).min(max_angle);
-
-        // get the quaternion to rotate from the current enemy facing direction towards the
-        // direction facing the player
-        let rotation_delta = Quat::from_rotation_z(rotation_angle);
-
-        // rotate the enemy to face the player
-        enemy_transform.rotation *= rotation_delta;
+        // rotate towards the player by up to the max_rotation
+        enemy_rotation.rotate_towards(rotation_to_player, max_rotation);
     }
 }
