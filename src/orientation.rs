@@ -194,7 +194,7 @@ mod rotation {
         #[must_use]
         pub fn into_xy(self) -> Vec2 {
             let radians = self.into_radians();
-            Vec2::new(radians.cos(), radians.sin())
+            Vec2::new(radians.sin(), radians.cos())
         }
 
         /// Construct a [`Direction`](crate::orientation::Direction) from radians, measured clockwise from midnight
@@ -203,7 +203,7 @@ mod rotation {
         pub fn from_radians(radians: impl Into<f32>) -> Rotation {
             use std::f32::consts::TAU;
 
-            let normalized_radians: f32 = radians.into().div_euclid(TAU);
+            let normalized_radians: f32 = radians.into().rem_euclid(TAU);
 
             Rotation {
                 deci_degrees: (normalized_radians * 3600. / TAU) as u16,
@@ -221,7 +221,7 @@ mod rotation {
         #[must_use]
         #[inline]
         pub fn from_degrees(degrees: impl Into<f32>) -> Rotation {
-            let normalized_degrees: f32 = degrees.into().div_euclid(360.0);
+            let normalized_degrees: f32 = degrees.into().rem_euclid(360.0);
 
             Rotation {
                 deci_degrees: (normalized_degrees * 10.0) as u16,
