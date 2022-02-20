@@ -12,8 +12,8 @@ pub mod position;
 
 /// The most commonly useful bits of the library
 pub mod prelude {
-    pub use crate::bounding::BoundingRegion;
+    pub use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion};
     pub use crate::orientation::{Direction, Rotation};
     pub use crate::plugin::{TwoDimBundle, TwoDimPlugin};
-    pub use crate::position::Position;
+    pub use crate::position::{discrete_coordinates::DiscreteCoordinate, Coordinate, Position};
 }
