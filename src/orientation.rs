@@ -126,7 +126,7 @@ mod rotation {
         #[inline]
         #[must_use]
         pub const fn rotation_direction(&self, target: Rotation) -> RotationDirection {
-            if target.deci_degrees - self.deci_degrees > Rotation::FULL_CIRCLE / 2 {
+            if self.distance(target).deci_degrees > Rotation::FULL_CIRCLE / 2 {
                 RotationDirection::Clockwise
             } else {
                 RotationDirection::CounterClockwise
@@ -139,12 +139,12 @@ mod rotation {
             if self.distance(target) <= max_rotation {
                 *self = target;
             } else {
-                match self.rotation_direction(target) {
-                    RotationDirection::Clockwise => self.deci_degrees += max_rotation.deci_degrees,
-                    RotationDirection::CounterClockwise => {
-                        self.deci_degrees -= max_rotation.deci_degrees
-                    }
-                }
+                let new_rotation = match self.rotation_direction(target) {
+                    RotationDirection::Clockwise => *self + max_rotation,
+                    RotationDirection::CounterClockwise => *self - max_rotation,
+                };
+
+                *self = new_rotation;
             }
         }
     }
