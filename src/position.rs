@@ -122,6 +122,17 @@ where
 
 impl<C: Coordinate> Position<C> {
     /// Gets the [`Direction`] that points away from this position, towards `other_position`
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::position::Position;
+    /// use leafwing_2d::orientation::Direction;
+    ///
+    /// let origin = Position::<f32>::default();
+    /// let target = Position::new(0.0, 1.0);
+    ///
+    /// assert_eq!(origin.direction_to(target), Ok(Direction::NORTH));
+    /// ```
     #[inline]
     #[must_use]
     pub fn direction_to(
@@ -133,6 +144,17 @@ impl<C: Coordinate> Position<C> {
     }
 
     /// Gets the [`Direction`] that points towards this position, from `other_position`
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::position::Position;
+    /// use leafwing_2d::orientation::Direction;
+    ///
+    /// let origin = Position::<f32>::default();
+    /// let target = Position::new(0.0, 1.0);
+    ///
+    /// assert_eq!(origin.direction_from(target), Ok(Direction::SOUTH));
+    /// ```
     #[inline]
     #[must_use]
     pub fn direction_from(
@@ -144,6 +166,17 @@ impl<C: Coordinate> Position<C> {
     }
 
     /// Gets the [`Rotation`] that points away from this position, towards `other_position`
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::position::Position;
+    /// use leafwing_2d::orientation::Rotation;
+    ///
+    /// let origin = Position::<f32>::default();
+    /// let target = Position::new(0.0, 1.0);
+    ///
+    /// assert_eq!(origin.rotation_to(target), Ok(Rotation::NORTH));
+    /// ```
     #[inline]
     #[must_use]
     pub fn rotation_to(
@@ -155,6 +188,17 @@ impl<C: Coordinate> Position<C> {
     }
 
     /// Gets the [`Rotation`] that points towards this position, from `other_position`
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::position::Position;
+    /// use leafwing_2d::orientation::Rotation;
+    ///
+    /// let origin = Position::<f32>::default();
+    /// let target = Position::new(0.0, -1.0);
+    ///
+    /// assert_eq!(origin.rotation_from(target), Ok(Rotation::NORTH));
+    /// ```
     #[inline]
     #[must_use]
     pub fn rotation_from(
