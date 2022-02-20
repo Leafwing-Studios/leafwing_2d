@@ -22,16 +22,10 @@ pub struct NearlySingularConversion;
 /// ```rust
 /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
 ///
-/// let origin = Position::default();
-/// let player_position = Position::<f32>::new(10.0, 4.0);
-///
-/// // Points SSW
-/// let rotation_to_origin = player_position.rotation_to(origin).expect("These two points are distinct.");
-/// let rotation_direction = rotation_to_origin.rotation_direction(Rotation::NORTH);
-/// let default_rotation_direction = Rotation::NORTH.rotation_direction(Rotation::NORTH);
-///
-/// assert_eq!(rotation_direction, RotationDirection::CounterClockwise);
-/// assert_eq!(default_rotation_direction, RotationDirection::Clockwise);
+/// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::NORTH), RotationDirection::Clockwise);
+/// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::EAST), RotationDirection::Clockwise);
+/// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::WEST), RotationDirection::CounterClockwise);
+/// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::SOUTH), RotationDirection::Clockwise);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RotationDirection {
