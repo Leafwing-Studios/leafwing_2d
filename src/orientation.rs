@@ -16,14 +16,14 @@ pub trait Orientation {
     /// Asserts that `self` is approximately equal to `other`
     ///
     /// The tolerance is given by the [`ROTATION_TOL`] / [`QUAT_TOL`] constant.
-    fn assert_approx_equal(&self, other: Self);
+    fn assert_approx_eq(&self, other: Self);
 }
 
 impl Orientation for Rotation {
     type Tolerance = Rotation;
     const TOL: Rotation = Rotation::new(1);
 
-    fn assert_approx_equal(&self, other: Rotation) {
+    fn assert_approx_eq(&self, other: Rotation) {
         let distance = self.distance(other);
         dbg!(self);
         dbg!(other);
@@ -35,7 +35,7 @@ impl Orientation for Direction {
     type Tolerance = Rotation;
     const TOL: Rotation = Rotation::new(1);
 
-    fn assert_approx_equal(&self, other: Direction) {
+    fn assert_approx_eq(&self, other: Direction) {
         let distance = self.distance(other);
         dbg!(self);
         dbg!(other);
@@ -47,7 +47,7 @@ impl Orientation for Quat {
     type Tolerance = f32;
     const TOL: f32 = 0.01;
 
-    fn assert_approx_equal(&self, other: Quat) {
+    fn assert_approx_eq(&self, other: Quat) {
         dbg!(self);
         dbg!(other);
         assert!(Quat::abs_diff_eq(*self, other, Self::TOL));
@@ -102,25 +102,25 @@ mod rotation {
     ///
     /// # Example
     /// ```rust
-    /// use leafwing_2d::orientation::{Rotation, Direction};
+    /// use leafwing_2d::orientation::{Rotation, Direction, Orientation};
     /// use core::f32::consts::{PI, TAU};
     ///
     /// let three_o_clock = Rotation::from_degrees(90.0);
     /// let six_o_clock = Rotation::from_radians(PI);
     /// let nine_o_clock = Rotation::from_degrees(-90.0);
     ///
-    /// assert_eq!(Rotation::default(), Rotation::from_radians(0.0));
-    /// assert_eq!(Rotation::default(), Rotation::from_radians(TAU));
-    /// assert_eq!(Rotation::default(), 500.0 * Rotation::from_radians(TAU));
+    /// Rotation::default().assert_approx_eq(Rotation::from_radians(0.0));
+    /// Rotation::default().assert_approx_eq(Rotation::from_radians(TAU));
+    /// Rotation::default().assert_approx_eq(500.0 * Rotation::from_radians(TAU));
     ///
-    /// assert_eq!(three_o_clock + six_o_clock, nine_o_clock);
-    /// assert_eq!(nine_o_clock - three_o_clock, six_o_clock);
-    /// assert_eq!(2.0 * nine_o_clock, six_o_clock);
-    /// assert_eq!(six_o_clock / 2.0, three_o_clock);
+    /// (three_o_clock + six_o_clock).assert_approx_eq(nine_o_clock);
+    /// (nine_o_clock - three_o_clock).assert_approx_eq(six_o_clock);
+    /// (2.0 * nine_o_clock).assert_approx_eq(six_o_clock);
+    /// (six_o_clock / 2.0).assert_approx_eq(three_o_clock);
     ///
-    /// assert_eq!(six_o_clock, Rotation::SOUTH);
+    /// six_o_clock.assert_approx_eq(Rotation::SOUTH);
     ///
-    /// assert_eq!(Direction::from(nine_o_clock), Direction::WEST);
+    /// Direction::from(nine_o_clock).assert_approx_eq(Direction::WEST);
     /// ```
     #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default)]
     pub struct Rotation {
@@ -174,7 +174,7 @@ mod rotation {
         #[inline]
         #[must_use]
         pub const fn rotation_direction(&self, target: Rotation) -> RotationDirection {
-            if self.distance(target).deci_degrees > Rotation::FULL_CIRCLE / 2 {
+            if self.distance(target).deci_degrees >= Rotation::FULL_CIRCLE / 2 {
                 RotationDirection::Clockwise
             } else {
                 RotationDirection::CounterClockwise

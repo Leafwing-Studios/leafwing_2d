@@ -49,10 +49,10 @@ fn rotation_from_radians() {
 
 #[test]
 fn direction_rotation_conversion() {
-    Direction::NORTH.assert_approx_equal(Direction::from(Rotation::new(0)));
-    Direction::NORTHEAST.assert_approx_equal(Direction::from(Rotation::new(450)));
-    Direction::WEST.assert_approx_equal(Direction::from(Rotation::new(2700)));
-    Direction::NORTH.assert_approx_equal(Direction::from(Rotation::new(3600)));
+    Direction::NORTH.assert_approx_eq(Direction::from(Rotation::new(0)));
+    Direction::NORTHEAST.assert_approx_eq(Direction::from(Rotation::new(450)));
+    Direction::WEST.assert_approx_eq(Direction::from(Rotation::new(2700)));
+    Direction::NORTH.assert_approx_eq(Direction::from(Rotation::new(3600)));
 }
 
 fn assert_rotation_quat_conversions_match(radians: f32) {
@@ -125,14 +125,14 @@ fn assert_conversions_match(target_position: Position<f32>) {
     let quat_direction = Direction::from(quat);
     let quat_rotation = Rotation::from(quat);
 
-    direction.assert_approx_equal(rotation_direction);
-    direction.assert_approx_equal(quat_direction);
+    direction.assert_approx_eq(rotation_direction);
+    direction.assert_approx_eq(quat_direction);
 
-    rotation.assert_approx_equal(direction_rotation);
-    rotation.assert_approx_equal(quat_rotation);
+    rotation.assert_approx_eq(direction_rotation);
+    rotation.assert_approx_eq(quat_rotation);
 
-    quat.assert_approx_equal(direction_quat);
-    quat.assert_approx_equal(rotation_quat);
+    quat.assert_approx_eq(direction_quat);
+    quat.assert_approx_eq(rotation_quat);
 }
 
 #[test]
