@@ -3,6 +3,9 @@ use bevy::transform::components::Transform;
 use leafwing_2d::orientation::*;
 use leafwing_2d::position::Position;
 
+const ROTATION_TOL: Rotation = Rotation::new(5);
+const QUAT_TOL: f32 = 0.1;
+
 #[test]
 fn rotation_wrapping() {
     let rotation = Rotation::new(42);
@@ -37,21 +40,32 @@ fn rotation_from_radians() {
 
 #[test]
 fn direction_rotation_conversion() {
-    assert_eq!(
-        Direction::from(Rotation::from_degrees(0.0)),
+    assert!(
         Direction::NORTH
+            .distance(Direction::from(Rotation::new(0)))
+            .unwrap()
+            <= ROTATION_TOL
     );
-    assert_eq!(
-        Direction::from(Rotation::from_degrees(45.0)),
+
+    assert!(
         Direction::NORTHEAST
+            .distance(Direction::from(Rotation::new(450)))
+            .unwrap()
+            <= ROTATION_TOL
     );
-    assert_eq!(
-        Direction::from(Rotation::from_degrees(-90.0)),
+
+    assert!(
         Direction::WEST
+            .distance(Direction::from(Rotation::new(2700)))
+            .unwrap()
+            <= ROTATION_TOL
     );
-    assert_eq!(
-        Direction::from(Rotation::from_degrees(360.0)),
+
+    assert!(
         Direction::NORTH
+            .distance(Direction::from(Rotation::new(3600)))
+            .unwrap()
+            <= ROTATION_TOL
     );
 
     let neutral_result: Result<Rotation, NearlySingularConversion> = Direction::NEUTRAL.try_into();
@@ -59,9 +73,6 @@ fn direction_rotation_conversion() {
 }
 
 fn assert_quaternion_conversion_correct(target_position: Position<f32>) {
-    const ROTATION_TOL: Rotation = Rotation::new(5);
-    const QUAT_TOL: f32 = 0.1;
-
     dbg!(target_position);
 
     let target_vec3 = target_position.into();
