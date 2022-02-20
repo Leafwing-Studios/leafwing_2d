@@ -84,7 +84,7 @@ fn direction_rotation_conversion() {
     assert!(neutral_result.is_err());
 }
 
-fn assert_quaternion_conversion_correct(target_position: Position<f32>) {
+fn assert_conversions_match(target_position: Position<f32>) {
     dbg!(target_position);
 
     let target_vec3 = target_position.into();
@@ -127,24 +127,24 @@ fn assert_quaternion_conversion_correct(target_position: Position<f32>) {
 }
 
 #[test]
-fn quaternion_conversion() {
+fn holistic_conversions() {
     // Cardinal directions
-    assert_quaternion_conversion_correct(Position::new(0.0, 1.0));
-    assert_quaternion_conversion_correct(Position::new(0.0, -1.0));
-    assert_quaternion_conversion_correct(Position::new(1.0, 0.0));
-    assert_quaternion_conversion_correct(Position::new(-1.0, 0.0));
+    assert_conversions_match(Position::new(0.0, 1.0));
+    assert_conversions_match(Position::new(0.0, -1.0));
+    assert_conversions_match(Position::new(1.0, 0.0));
+    assert_conversions_match(Position::new(-1.0, 0.0));
 
     // Offset directions
-    assert_quaternion_conversion_correct(Position::new(1.0, 1.0));
-    assert_quaternion_conversion_correct(Position::new(1.0, -1.0));
-    assert_quaternion_conversion_correct(Position::new(-1.0, 1.0));
-    assert_quaternion_conversion_correct(Position::new(1.0, -1.0));
+    assert_conversions_match(Position::new(1.0, 1.0));
+    assert_conversions_match(Position::new(1.0, -1.0));
+    assert_conversions_match(Position::new(-1.0, 1.0));
+    assert_conversions_match(Position::new(1.0, -1.0));
 
     // Scaled values
-    assert_quaternion_conversion_correct(Position::new(0.01, 0.01));
-    assert_quaternion_conversion_correct(Position::new(1000.0, 1000.0));
+    assert_conversions_match(Position::new(0.01, 0.01));
+    assert_conversions_match(Position::new(1000.0, 1000.0));
 
     // Arbitrary values
-    assert_quaternion_conversion_correct(Position::new(47.8, 0.03));
-    assert_quaternion_conversion_correct(Position::new(-4001.0, 432.7));
+    assert_conversions_match(Position::new(47.8, 0.03));
+    assert_conversions_match(Position::new(-4001.0, 432.7));
 }
