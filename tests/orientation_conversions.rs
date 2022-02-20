@@ -59,6 +59,11 @@ fn direction_rotation_conversion() {
 }
 
 fn assert_quaternion_conversion_correct(target_position: Position<f32>) {
+    const ROTATION_TOL: Rotation = Rotation::new(5);
+    const QUAT_TOL: f32 = 0.1;
+
+    dbg!(target_position);
+
     let target_vec3 = target_position.into();
     let origin = Position::<f32>::default();
     let mut origin_transform = Transform::default();
@@ -69,14 +74,33 @@ fn assert_quaternion_conversion_correct(target_position: Position<f32>) {
     let rotation = origin.rotation_to(target_position).unwrap();
     let quat = origin_transform.rotation;
 
-    assert_eq!(Direction::from(rotation), direction);
-    assert_eq!(Quat::try_from(direction).unwrap(), quat);
-    assert_eq!(Quat::from(rotation), quat);
-    assert_eq!(
-        Direction::from(Quat::try_from(direction).unwrap()),
-        direction
-    );
-    assert_eq!(Rotation::try_from(Quat::from(rotation)).unwrap(), rotation);
+    let rotation_direction = Direction::from(rotation);
+    let direction_rotation = Rotation::try_from(direction).unwrap();
+    let direction_quat = Quat::try_from(direction).unwrap();
+    let rotation_quat = Quat::try_from(rotation).unwrap();
+    let quat_direction = Direction::from(quat);
+    let quat_rotation = Rotation::try_from(quat).unwrap();
+
+    dbg!(direction);
+    dbg!(rotation_direction);
+    dbg!(quat_direction);
+
+    dbg!(rotation);
+    dbg!(direction_rotation);
+    dbg!(quat_rotation);
+
+    dbg!(quat);
+    dbg!(direction_quat);
+    dbg!(rotation_quat);
+
+    assert!(direction.distance(rotation_direction).unwrap() <= ROTATION_TOL);
+    assert!(direction.distance(quat_direction).unwrap() <= ROTATION_TOL);
+
+    assert!(rotation.distance(direction_rotation) <= ROTATION_TOL);
+    assert!(rotation.distance(quat_rotation) <= ROTATION_TOL);
+
+    assert!(quat.abs_diff_eq(direction_quat, QUAT_TOL));
+    assert!(quat.abs_diff_eq(rotation_quat, QUAT_TOL));
 }
 
 #[test]
