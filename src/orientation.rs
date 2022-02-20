@@ -76,7 +76,7 @@ mod rotation {
     /// ```
     #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default)]
     pub struct Rotation {
-        /// Tenth of a degree, measured clockwise from midnight (x=0, y=1)
+        /// Tenths of a degree, measured clockwise from midnight (x=0, y=1)
         ///
         /// 3600 make up a full circle.
         deci_degrees: u16,
@@ -93,6 +93,16 @@ mod rotation {
             Rotation {
                 deci_degrees: deci_degrees % Rotation::FULL_CIRCLE,
             }
+        }
+
+        /// Returns the exact internal mesaurement, stored in tenths of a degree
+        ///
+        /// Measured clockwise from midnight (x=0, y=1).
+        /// 3600 make up a full circle.
+        #[inline]
+        #[must_use]
+        pub const fn deci_degrees(&self) -> u16 {
+            self.deci_degrees
         }
 
         /// Returns the absolute distance, as a [`Rotation`], between `self` and `other`
