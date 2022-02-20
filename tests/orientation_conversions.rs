@@ -20,6 +20,18 @@ fn rotation_wrapping() {
 }
 
 #[test]
+fn orientation_alignment() {
+    let due_north: Position<f32> = Position::new(0.0, 1.0);
+    let origin = Position::default();
+
+    let rotation = origin.rotation_to(due_north).unwrap();
+    let direction = origin.direction_to(due_north);
+
+    assert_eq!(rotation, Rotation::NORTH);
+    assert_eq!(direction, Direction::NORTH);
+}
+
+#[test]
 fn rotation_from_degrees() {
     assert_eq!(Rotation::from_degrees(0.0).deci_degrees(), 0);
     assert_eq!(Rotation::from_degrees(65.0).deci_degrees(), 650);
