@@ -1,6 +1,6 @@
 //! 2-dimensional coordinates
 
-use crate::orientation::Direction;
+use crate::orientation::{Direction, NearOriginInput, Rotation};
 use bevy_ecs::prelude::Component;
 use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::{fmt::Debug, ops::*};
@@ -91,7 +91,7 @@ impl<T> Coordinate for T where
 }
 
 impl<C: Coordinate> Position<C> {
-    /// Gets the direction that points away from this position, towards `other_position`
+    /// Gets the [`Direction`] that points away from this position, towards `other_position`
     #[inline]
     #[must_use]
     pub fn direction_to(self, other_position: Position<C>) -> Direction {
@@ -99,12 +99,28 @@ impl<C: Coordinate> Position<C> {
         net_position.into()
     }
 
-    /// Gets the direction that points towards this position, from `other_position`
+    /// Gets the [`Direction`] that points towards this position, from `other_position`
     #[inline]
     #[must_use]
     pub fn direction_from(self, other_position: Position<C>) -> Direction {
         let net_position: Position<C> = self - other_position;
         net_position.into()
+    }
+
+    /// Gets the [`Rotation`] that points away from this position, towards `other_position`
+    #[inline]
+    #[must_use]
+    pub fn rotation_to(self, other_position: Position<C>) -> Result<Rotation, NearOriginInput> {
+        let net_position: Position<C> = other_position - self;
+        net_position.try_into()
+    }
+
+    /// Gets the [`Rotation`] that points towards this position, from `other_position`
+    #[inline]
+    #[must_use]
+    pub fn rotation_from(self, other_position: Position<C>) -> Result<Rotation, NearOriginInput> {
+        let net_position: Position<C> = self - other_position;
+        net_position.try_into()
     }
 }
 
@@ -340,6 +356,16 @@ mod conversions {
             let vec2: Vec2 = position.into();
 
             Direction::new(vec2)
+        }
+    }
+
+    impl<C: Coordinate> TryFrom<Position<C>> for Rotation {
+        type Error = NearOriginInput;
+
+        fn try_from(position: Position<C>) -> Result<Rotation, NearOriginInput> {
+            let vec2: Vec2 = position.into();
+
+            vec2.try_into()
         }
     }
 

@@ -185,7 +185,7 @@ fn snap_to_player_system(
 
 /// Demonstrates rotating an enemy ship to face the player ship at a given rotation speed.
 ///
-/// This system simply uses the `direction_to` and `rotate_towards` methods to perform the required computations.
+/// This system simply uses the `rotation_to` and `rotate_towards` methods to perform the required computations.
 fn rotate_to_player_system(
     mut query: Query<(&RotateToPlayer, &mut Rotation, &Position<f32>), Without<Player>>,
     player_query: Query<&Position<f32>, With<Player>>,
@@ -194,8 +194,7 @@ fn rotate_to_player_system(
 
     for (config, mut enemy_rotation, enemy_position) in query.iter_mut() {
         // determine the direction towards the player
-        let direction_to_player = enemy_position.direction_to(player_position);
-        let maybe_rotation_to_player = direction_to_player.try_into();
+        let maybe_rotation_to_player = enemy_position.rotation_to(player_position);
 
         // if the player is on top of the enemy, we can early out
         if maybe_rotation_to_player.is_err() {
