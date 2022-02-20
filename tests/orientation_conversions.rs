@@ -3,9 +3,6 @@ use bevy::transform::components::Transform;
 use leafwing_2d::orientation::*;
 use leafwing_2d::position::Position;
 
-const ROTATION_TOL: Rotation = Rotation::new(5);
-const QUAT_TOL: f32 = 0.1;
-
 #[test]
 fn rotation_wrapping() {
     let rotation = Rotation::new(42);
@@ -52,33 +49,10 @@ fn rotation_from_radians() {
 
 #[test]
 fn direction_rotation_conversion() {
-    assert!(
-        Direction::NORTH
-            .distance(Direction::from(Rotation::new(0)))
-            .unwrap()
-            <= ROTATION_TOL
-    );
-
-    assert!(
-        Direction::NORTHEAST
-            .distance(Direction::from(Rotation::new(450)))
-            .unwrap()
-            <= ROTATION_TOL
-    );
-
-    assert!(
-        Direction::WEST
-            .distance(Direction::from(Rotation::new(2700)))
-            .unwrap()
-            <= ROTATION_TOL
-    );
-
-    assert!(
-        Direction::NORTH
-            .distance(Direction::from(Rotation::new(3600)))
-            .unwrap()
-            <= ROTATION_TOL
-    );
+    Direction::NORTH.assert_approx_equal(Direction::from(Rotation::new(0)));
+    Direction::NORTHEAST.assert_approx_equal(Direction::from(Rotation::new(450)));
+    Direction::WEST.assert_approx_equal(Direction::from(Rotation::new(2700)));
+    Direction::NORTH.assert_approx_equal(Direction::from(Rotation::new(3600)));
 }
 
 fn assert_rotation_quat_conversions_match(radians: f32) {
@@ -151,26 +125,14 @@ fn assert_conversions_match(target_position: Position<f32>) {
     let quat_direction = Direction::from(quat);
     let quat_rotation = Rotation::from(quat);
 
-    dbg!(direction);
-    dbg!(rotation_direction);
-    dbg!(quat_direction);
+    direction.assert_approx_equal(rotation_direction);
+    direction.assert_approx_equal(quat_direction);
 
-    dbg!(rotation);
-    dbg!(direction_rotation);
-    dbg!(quat_rotation);
+    rotation.assert_approx_equal(direction_rotation);
+    rotation.assert_approx_equal(quat_rotation);
 
-    dbg!(quat);
-    dbg!(direction_quat);
-    dbg!(rotation_quat);
-
-    assert!(direction.distance(rotation_direction).unwrap() <= ROTATION_TOL);
-    assert!(direction.distance(quat_direction).unwrap() <= ROTATION_TOL);
-
-    assert!(rotation.distance(direction_rotation) <= ROTATION_TOL);
-    assert!(rotation.distance(quat_rotation) <= ROTATION_TOL);
-
-    assert!(quat.abs_diff_eq(direction_quat, QUAT_TOL));
-    assert!(quat.abs_diff_eq(rotation_quat, QUAT_TOL));
+    quat.assert_approx_equal(direction_quat);
+    quat.assert_approx_equal(rotation_quat);
 }
 
 #[test]

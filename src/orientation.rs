@@ -1,10 +1,58 @@
 //! Direction and rotation for spinning around in 2 dimensions
 
-use bevy_math::Vec2;
+use bevy_math::{Quat, Vec2};
 use derive_more::{Display, Error};
 
 pub use direction::Direction;
 pub use rotation::Rotation;
+
+/// A type that can represent a orientation in 2D space
+pub trait Orientation {
+    /// The type used to define the tolerance for [`Orientation::assert_approx_equal`]
+    type Tolerance;
+    /// The maximum allowable error for [`Orientation::assert_approx_equal`]
+    const TOL: Self::Tolerance;
+
+    /// Asserts that `self` is approximately equal to `other`
+    ///
+    /// The tolerance is given by the [`ROTATION_TOL`] / [`QUAT_TOL`] constant.
+    fn assert_approx_equal(&self, other: Self);
+}
+
+impl Orientation for Rotation {
+    type Tolerance = Rotation;
+    const TOL: Rotation = Rotation::new(1);
+
+    fn assert_approx_equal(&self, other: Rotation) {
+        let distance = self.distance(other);
+        dbg!(self);
+        dbg!(other);
+        assert!(distance <= Self::TOL);
+    }
+}
+
+impl Orientation for Direction {
+    type Tolerance = Rotation;
+    const TOL: Rotation = Rotation::new(1);
+
+    fn assert_approx_equal(&self, other: Direction) {
+        let distance = self.distance(other);
+        dbg!(self);
+        dbg!(other);
+        assert!(distance <= Self::TOL);
+    }
+}
+
+impl Orientation for Quat {
+    type Tolerance = f32;
+    const TOL: f32 = 0.01;
+
+    fn assert_approx_equal(&self, other: Quat) {
+        dbg!(self);
+        dbg!(other);
+        assert!(Quat::abs_diff_eq(*self, other, Self::TOL));
+    }
+}
 
 /// The supplied vector-like struct was too close to zero to be converted into a rotation-like type
 ///
@@ -314,7 +362,7 @@ mod rotation {
 }
 
 mod direction {
-    use super::{rotation::Rotation, NearlySingularConversion};
+    use super::rotation::Rotation;
     use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
     use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
@@ -369,11 +417,11 @@ mod direction {
         }
 
         /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
-        pub fn distance(&self, other: Direction) -> Result<Rotation, NearlySingularConversion> {
+        pub fn distance(&self, other: Direction) -> Rotation {
             let self_rotation: Rotation = (*self).into();
             let other_rotation: Rotation = other.into();
 
-            Ok(self_rotation.distance(other_rotation))
+            self_rotation.distance(other_rotation)
         }
     }
 
