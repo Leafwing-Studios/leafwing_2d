@@ -617,7 +617,8 @@ mod conversions {
         fn from(quaternion: Quat) -> Self {
             // +Y is the default direction, we need to rotate it by the quaternion
             // in order to receive the new direction
-            let vec3 = quaternion.mul_vec3(Vec3::Y);
+            // We must use the inverse quaternion to ensure that the rotation is applied in the correct direction.
+            let vec3 = quaternion.inverse().mul_vec3(Vec3::Y);
             Direction::new(vec3.truncate())
         }
     }
