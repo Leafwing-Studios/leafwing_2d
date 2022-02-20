@@ -13,7 +13,7 @@ pub use rotation::Rotation;
 /// such as a [`Direction`] or [`Vec2`].
 ///
 /// In almost all cases, the correct way to handle this error is to simply not change the rotation.
-#[derive(Debug, Clone, Copy, Error, Display)]
+#[derive(Debug, Clone, Copy, Error, Display, PartialEq, Eq)]
 pub struct NearlySingularConversion;
 
 /// A direction of rotation
@@ -525,6 +525,14 @@ mod conversions {
         }
     }
 
+    /// # Example
+    /// ```rust
+    /// use bevy_math::Quat;
+    /// use leafwing_2d::orientation::{Rotation, NearlySingularConversion};
+    ///
+    /// assert_eq!(Rotation::try_from(Quat::from_rotation_z(0.0)), Ok(Rotation::NORTH));
+    /// assert_eq!(Rotation::try_from(Quat::IDENTITY), Err(NearlySingularConversion));
+    /// ```
     impl TryFrom<Quat> for Rotation {
         type Error = NearlySingularConversion;
 
@@ -534,12 +542,27 @@ mod conversions {
         }
     }
 
+    /// # Example
+    /// ```rust
+    /// use bevy_math::Quat;
+    /// use leafwing_2d::orientation::Rotation;
+    ///
+    /// assert!(Quat::from(Rotation::from_radians(0.0)).abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
+    /// assert!(Quat::from(Rotation::from_radians(43.7)).abs_diff_eq(Quat::from_rotation_z(43.7), 0.01));
+    /// ```
     impl From<Rotation> for Quat {
         fn from(rotation: Rotation) -> Self {
             Quat::from_rotation_z(rotation.into_radians())
         }
     }
 
+    /// # Example
+    /// ```rust
+    /// use bevy_math::Quat;
+    /// use leafwing_2d::orientation::Direction;
+    ///
+    /// assert_eq!(Direction::from(Quat::from_rotation_z(0.0)), Direction::NORTH);
+    /// ```
     impl From<Quat> for Direction {
         fn from(quaternion: Quat) -> Self {
             let vec3 = quaternion.xyz();
@@ -547,6 +570,14 @@ mod conversions {
         }
     }
 
+    /// # Example
+    /// ```rust
+    /// use bevy_math::Quat;
+    /// use leafwing_2d::orientation::{Direction, NearlySingularConversion};
+    ///
+    /// assert!(Quat::try_from(Direction::NORTH).unwrap().abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
+    /// assert_eq!(Quat::try_from(Direction::NEUTRAL), Err(NearlySingularConversion));
+    /// ```
     impl TryFrom<Direction> for Quat {
         type Error = NearlySingularConversion;
 

@@ -8,7 +8,7 @@ use derive_more::{
 use std::{fmt::Debug, ops::*};
 
 /// A float could not be converted into a [`Coordinate`]
-#[derive(Debug, Clone, Copy, Error, Display)]
+#[derive(Debug, Clone, Copy, Error, Display, PartialEq, Eq)]
 pub struct FloatCoordinateConversionError;
 
 /// A 2-dimensional coordinate
