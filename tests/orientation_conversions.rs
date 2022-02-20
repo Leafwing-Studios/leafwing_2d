@@ -81,6 +81,56 @@ fn direction_rotation_conversion() {
     );
 }
 
+fn assert_rotation_quat_conversions_match(radians: f32) {
+    assert_eq!(
+        Quat::from_rotation_z(radians),
+        Quat::from(Rotation::from_radians(radians))
+    );
+
+    assert_eq!(
+        Rotation::from(Quat::from_rotation_z(radians)),
+        Rotation::from_radians(radians)
+    );
+}
+
+#[test]
+fn rotation_quat_conversion() {
+    use core::f32::consts::TAU;
+
+    assert_rotation_quat_conversions_match(0.0);
+    assert_rotation_quat_conversions_match(TAU / 4.0);
+    assert_rotation_quat_conversions_match(TAU / 2.0);
+    assert_rotation_quat_conversions_match(3.0 * TAU / 4.0);
+
+    assert_rotation_quat_conversions_match(TAU / 6.0);
+    assert_rotation_quat_conversions_match(-TAU / 6.0);
+}
+
+fn assert_direction_quat_conversions_match(radians: f32) {
+    assert_eq!(
+        Quat::from_rotation_z(radians),
+        Quat::from(Direction::from(Rotation::from_radians(radians)))
+    );
+
+    assert_eq!(
+        Direction::from(Quat::from_rotation_z(radians)),
+        Direction::from(Rotation::from_radians(radians))
+    );
+}
+
+#[test]
+fn direction_quat_conversion() {
+    use core::f32::consts::TAU;
+
+    assert_direction_quat_conversions_match(0.0);
+    assert_direction_quat_conversions_match(TAU / 4.0);
+    assert_direction_quat_conversions_match(TAU / 2.0);
+    assert_direction_quat_conversions_match(3.0 * TAU / 4.0);
+
+    assert_direction_quat_conversions_match(TAU / 6.0);
+    assert_direction_quat_conversions_match(-TAU / 6.0);
+}
+
 fn assert_conversions_match(target_position: Position<f32>) {
     dbg!(target_position);
 
