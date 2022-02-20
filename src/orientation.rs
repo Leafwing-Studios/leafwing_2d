@@ -16,7 +16,7 @@ pub use rotation::Rotation;
 #[derive(Debug, Clone, Copy, Error, Display, PartialEq, Eq)]
 pub struct NearlySingularConversion;
 
-/// A direction of rotation
+/// A direction that a [`Rotation`] can be applied in
 ///
 /// /// # Example
 /// ```rust
@@ -25,13 +25,13 @@ pub struct NearlySingularConversion;
 /// let origin = Position::default();
 /// let player_position = Position::<f32>::new(10.0, 4.0);
 ///
-/// let due_north = Rotation::default();
-///
 /// // Points SSW
 /// let rotation_to_origin = player_position.rotation_to(origin).expect("These two points are distinct.");
-/// let rotation_direction = rotation_to_origin.rotation_direction(due_north);
+/// let rotation_direction = rotation_to_origin.rotation_direction(Rotation::NORTH);
+/// let default_rotation_direction = Rotation::NORTH.rotation_direction(Rotation::NORTH);
 ///
-/// assert_eq!(rotation_direction, RotationDirection::CounterClockwise)
+/// assert_eq!(rotation_direction, RotationDirection::CounterClockwise);
+/// assert_eq!(default_rotation_direction, RotationDirection::Clockwise);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RotationDirection {
@@ -39,6 +39,12 @@ pub enum RotationDirection {
     Clockwise,
     /// Corresponds to a negative rotation
     CounterClockwise,
+}
+
+impl Default for RotationDirection {
+    fn default() -> RotationDirection {
+        RotationDirection::Clockwise
+    }
 }
 
 mod rotation {
@@ -579,9 +585,12 @@ mod conversions {
     /// # Example
     /// ```rust
     /// use bevy_math::Quat;
-    /// use leafwing_2d::orientation::Direction;
+    /// use leafwing_2d::orientation::{Direction, Rotation};
+    /// use core::f32::consts::TAU;
+    /// const ROTATION_TOL: Rotation = Rotation::new(5);
     ///
     /// assert_eq!(Direction::from(Quat::from_rotation_z(0.0)), Direction::NORTH);
+    /// assert!(Direction::WEST.distance(Direction::from(Quat::from_rotation_z(-TAU/4.0))).unwrap() <= ROTATION_TOL);
     /// ```
     impl From<Quat> for Direction {
         fn from(quaternion: Quat) -> Self {
@@ -596,8 +605,10 @@ mod conversions {
     /// ```rust
     /// use bevy_math::Quat;
     /// use leafwing_2d::orientation::{Direction, NearlySingularConversion};
+    /// use core::f32::consts::TAU;
     ///
     /// assert!(Quat::try_from(Direction::NORTH).unwrap().abs_diff_eq(Quat::from_rotation_z(0.0), 0.01));
+    /// assert!(Quat::try_from(Direction::WEST).unwrap().abs_diff_eq(Quat::from_rotation_z(-TAU/4.0), 0.01));
     /// assert_eq!(Quat::try_from(Direction::NEUTRAL), Err(NearlySingularConversion));
     /// ```
     impl TryFrom<Direction> for Quat {
