@@ -161,7 +161,9 @@ fn player_movement_system(
     // create the change in translation using the new movement direction and distance
     let translation_delta = direction * movement_distance;
     // update the ship translation with our new translation delta
-    *position += translation_delta.into();
+    *position += translation_delta
+        .try_into()
+        .expect("This conversion is infallible.");
 
     // bound the ship within the invisible level bounds
     *position = PLAY_AREA.clamp(*position);

@@ -1,8 +1,10 @@
 //! 2-dimensional coordinates
 
-use crate::orientation::{Direction, NearOriginInput, Rotation};
+use crate::orientation::{Direction, NearlySingularConversion, Rotation};
 use bevy_ecs::prelude::Component;
-use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
+use derive_more::{
+    Add, AddAssign, Display, Div, DivAssign, Error, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
+};
 use std::{fmt::Debug, ops::*};
 
 /// A 2-dimensional coordinate
@@ -51,7 +53,7 @@ impl<C: Coordinate> Position<C> {
 
 /// A type that can be used as a coordinate type for [`Position`]
 ///
-/// This trait has a blanket impl for all types that meet its bounds, and so is already implemented for all of the base float and integer types.
+/// This trait has a blanket impl for all types that impl [`TryFrom<f32>`], and so is already implemented for all of the base float and integer types.
 /// Additionally, consider using a [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) type if you are working with a grid-like game,
 /// as it provides several additional useful methods.
 pub trait Coordinate:
@@ -71,13 +73,19 @@ pub trait Coordinate:
     + PartialOrd
     + Send
     + Sync
-    + From<f32>
     + Into<f32>
     + 'static
 {
+    /// Attempt to create a [`Coordinate`] from a `f32`, as might be returned by [`Transform`](bevy_transform::components::Transform)
+    fn try_from_f32(float: f32) -> Result<Self, FloatCoordinateConversionError>;
 }
 
-impl<T> Coordinate for T where
+/// A float could not be converted into a [`Coordinate`]
+#[derive(Debug, Clone, Copy, Error, Display)]
+pub struct FloatCoordinateConversionError;
+
+impl<T> Coordinate for T
+where
     T: Copy
         + Debug
         + Default
@@ -94,10 +102,18 @@ impl<T> Coordinate for T where
         + PartialOrd
         + Send
         + Sync
-        + From<f32>
         + Into<f32>
-        + 'static
+        + TryFrom<f32>
+        + 'static,
 {
+    fn try_from_f32(float: f32) -> Result<Self, FloatCoordinateConversionError> {
+        let result = float.try_into();
+
+        match result {
+            Ok(coordinate) => Ok(coordinate),
+            Err(_) => Err(FloatCoordinateConversionError),
+        }
+    }
 }
 
 impl<C: Coordinate> Position<C> {
@@ -120,7 +136,10 @@ impl<C: Coordinate> Position<C> {
     /// Gets the [`Rotation`] that points away from this position, towards `other_position`
     #[inline]
     #[must_use]
-    pub fn rotation_to(self, other_position: Position<C>) -> Result<Rotation, NearOriginInput> {
+    pub fn rotation_to(
+        self,
+        other_position: Position<C>,
+    ) -> Result<Rotation, NearlySingularConversion> {
         let net_position: Position<C> = other_position - self;
         net_position.try_into()
     }
@@ -128,7 +147,10 @@ impl<C: Coordinate> Position<C> {
     /// Gets the [`Rotation`] that points towards this position, from `other_position`
     #[inline]
     #[must_use]
-    pub fn rotation_from(self, other_position: Position<C>) -> Result<Rotation, NearOriginInput> {
+    pub fn rotation_from(
+        self,
+        other_position: Position<C>,
+    ) -> Result<Rotation, NearlySingularConversion> {
         let net_position: Position<C> = self - other_position;
         net_position.try_into()
     }
@@ -340,12 +362,14 @@ mod conversions {
     use bevy_math::{Vec2, Vec3};
     use bevy_transform::components::{GlobalTransform, Transform};
 
-    impl<C: Coordinate> From<Vec2> for Position<C> {
-        fn from(vec: Vec2) -> Position<C> {
-            Position {
-                x: vec.x.into(),
-                y: vec.y.into(),
-            }
+    impl<C: Coordinate> TryFrom<Vec2> for Position<C> {
+        type Error = FloatCoordinateConversionError;
+
+        fn try_from(vec: Vec2) -> Result<Position<C>, FloatCoordinateConversionError> {
+            let x = C::try_from_f32(vec.x)?;
+            let y = C::try_from_f32(vec.y)?;
+
+            Ok(Position { x, y })
         }
     }
 
@@ -370,39 +394,47 @@ mod conversions {
     }
 
     impl<C: Coordinate> TryFrom<Position<C>> for Rotation {
-        type Error = NearOriginInput;
+        type Error = NearlySingularConversion;
 
-        fn try_from(position: Position<C>) -> Result<Rotation, NearOriginInput> {
+        fn try_from(position: Position<C>) -> Result<Rotation, NearlySingularConversion> {
             let vec2: Vec2 = position.into();
 
             vec2.try_into()
         }
     }
 
-    impl<C: Coordinate> From<Vec3> for Position<C> {
-        fn from(vec: Vec3) -> Self {
-            Self {
-                x: vec.x.into(),
-                y: vec.y.into(),
-            }
+    impl<C: Coordinate> TryFrom<Vec3> for Position<C> {
+        type Error = FloatCoordinateConversionError;
+
+        fn try_from(vec: Vec3) -> Result<Position<C>, FloatCoordinateConversionError> {
+            let x = C::try_from_f32(vec.x)?;
+            let y = C::try_from_f32(vec.y)?;
+
+            Ok(Position { x, y })
         }
     }
 
-    impl<C: Coordinate> From<Transform> for Position<C> {
-        fn from(transform: Transform) -> Self {
-            Self {
-                x: transform.translation.x.into(),
-                y: transform.translation.y.into(),
-            }
+    impl<C: Coordinate> TryFrom<Transform> for Position<C> {
+        type Error = FloatCoordinateConversionError;
+
+        fn try_from(transform: Transform) -> Result<Position<C>, FloatCoordinateConversionError> {
+            let x = C::try_from_f32(transform.translation.x)?;
+            let y = C::try_from_f32(transform.translation.y)?;
+
+            Ok(Position { x, y })
         }
     }
 
-    impl<C: Coordinate> From<GlobalTransform> for Position<C> {
-        fn from(transform: GlobalTransform) -> Self {
-            Self {
-                x: transform.translation.x.into(),
-                y: transform.translation.y.into(),
-            }
+    impl<C: Coordinate> TryFrom<GlobalTransform> for Position<C> {
+        type Error = FloatCoordinateConversionError;
+
+        fn try_from(
+            transform: GlobalTransform,
+        ) -> Result<Position<C>, FloatCoordinateConversionError> {
+            let x = C::try_from_f32(transform.translation.x)?;
+            let y = C::try_from_f32(transform.translation.y)?;
+
+            Ok(Position { x, y })
         }
     }
 }

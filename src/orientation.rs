@@ -130,7 +130,7 @@ mod rotation {
             } else {
                 match self.rotation_direction(target) {
                     RotationDirection::Clockwise => self.deci_degrees += max_rotation.deci_degrees,
-                    RotationDirection::Counterclockwise => {
+                    RotationDirection::CounterClockwise => {
                         self.deci_degrees -= max_rotation.deci_degrees
                     }
                 }
@@ -169,9 +169,9 @@ mod rotation {
         ///
         /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)), None will be returned instead.
         #[inline]
-        pub fn from_xy(xy: Vec2) -> Result<Rotation, NearOriginInput> {
+        pub fn from_xy(xy: Vec2) -> Result<Rotation, NearlySingularConversion> {
             if xy.length_squared() < f32::EPSILON * f32::EPSILON {
-                Err(NearOriginInput)
+                Err(NearlySingularConversion)
             } else {
                 let radians = f32::atan2(xy.y, xy.x);
                 Ok(Rotation::from_radians(radians))
@@ -277,12 +277,26 @@ mod rotation {
             Rotation::from_degrees(rhs.into_degrees() * self)
         }
     }
+
+    impl Div<f32> for Rotation {
+        type Output = Rotation;
+        fn div(self, rhs: f32) -> Rotation {
+            Rotation::from_degrees(self.into_degrees() / rhs)
+        }
+    }
+
+    impl Div<Rotation> for f32 {
+        type Output = Rotation;
+        fn div(self, rhs: Rotation) -> Rotation {
+            Rotation::from_degrees(self / rhs.into_degrees())
+        }
+    }
 }
 
 mod direction {
     use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
-    use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
+    use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
     use std::f32::consts::SQRT_2;
 
     /// A unit direction vector
@@ -423,6 +437,22 @@ mod direction {
         }
     }
 
+    impl Div<f32> for Direction {
+        type Output = Vec2;
+
+        fn div(self, rhs: f32) -> Self::Output {
+            Vec2::new(self.unit_vector.x / rhs, self.unit_vector.y / rhs)
+        }
+    }
+
+    impl Div<Direction> for f32 {
+        type Output = Vec2;
+
+        fn div(self, rhs: Direction) -> Self::Output {
+            Vec2::new(self / rhs.unit_vector.x, self / rhs.unit_vector.y)
+        }
+    }
+
     impl From<Direction> for Vec3 {
         fn from(direction: Direction) -> Vec3 {
             Vec3::new(direction.unit_vector.x, direction.unit_vector.y, 0.0)
@@ -441,7 +471,7 @@ mod direction {
 }
 
 mod conversions {
-    use super::{Direction, NearOriginInput, Rotation};
+    use super::{Direction, NearlySingularConversion, Rotation};
     use bevy_math::{Quat, Vec2};
 
     impl From<Rotation> for Direction {
@@ -451,17 +481,17 @@ mod conversions {
     }
 
     impl TryFrom<Direction> for Rotation {
-        type Error = NearOriginInput;
+        type Error = NearlySingularConversion;
 
-        fn try_from(direction: Direction) -> Result<Rotation, NearOriginInput> {
+        fn try_from(direction: Direction) -> Result<Rotation, NearlySingularConversion> {
             Rotation::from_xy(direction.unit_vector())
         }
     }
 
     impl TryFrom<Vec2> for Rotation {
-        type Error = NearOriginInput;
+        type Error = NearlySingularConversion;
 
-        fn try_from(vec2: Vec2) -> Result<Rotation, NearOriginInput> {
+        fn try_from(vec2: Vec2) -> Result<Rotation, NearlySingularConversion> {
             Rotation::from_xy(vec2)
         }
     }
@@ -485,9 +515,9 @@ mod conversions {
     }
 
     impl TryFrom<Quat> for Rotation {
-        type Error = NearOriginInput;
+        type Error = NearlySingularConversion;
 
-        fn try_from(quaternion: Quat) -> Result<Rotation, NearOriginInput> {
+        fn try_from(quaternion: Quat) -> Result<Rotation, NearlySingularConversion> {
             let direction: Direction = quaternion.into();
             direction.try_into()
         }
@@ -507,14 +537,14 @@ mod conversions {
     }
 
     impl TryFrom<Direction> for Quat {
-        type Error = NearOriginInput;
+        type Error = NearlySingularConversion;
 
-        fn try_from(direction: Direction) -> Result<Quat, NearOriginInput> {
-            let maybe_rotation: Result<Rotation, NearOriginInput> = direction.try_into();
+        fn try_from(direction: Direction) -> Result<Quat, NearlySingularConversion> {
+            let maybe_rotation: Result<Rotation, NearlySingularConversion> = direction.try_into();
             if let Ok(rotation) = maybe_rotation {
                 Ok(rotation.into())
             } else {
-                Err(NearOriginInput)
+                Err(NearlySingularConversion)
             }
         }
     }
