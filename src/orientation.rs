@@ -178,13 +178,22 @@ mod rotation {
     impl Rotation {
         /// Constructs a [`Direction`](crate::orientation::Direction) from an (x,y) Euclidean coordinate
         ///
-        /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)), None will be returned instead.
+        /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)),
+        /// [`None`] will be returned instead.
+        ///
+        /// # Example
+        /// ```rust
+        /// use bevy_math::Vec2;
+        /// use leafwing_2d::orientation::Rotation;
+        ///
+        /// assert_eq!(Rotation::from_xy(Vec2::new(0.0, 1.0)), Ok(Rotation::NORTH));
+        /// ```
         #[inline]
         pub fn from_xy(xy: Vec2) -> Result<Rotation, NearlySingularConversion> {
             if xy.length_squared() < f32::EPSILON * f32::EPSILON {
                 Err(NearlySingularConversion)
             } else {
-                let radians = f32::atan2(xy.y, xy.x);
+                let radians = f32::atan2(xy.x, xy.y);
                 Ok(Rotation::from_radians(radians))
             }
         }
