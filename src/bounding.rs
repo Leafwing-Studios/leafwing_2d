@@ -1,6 +1,5 @@
 //! Structs that bound regions that contain [`Positions`](crate::position::Position)
 
-use crate::orientation::Direction;
 use crate::position::{Coordinate, Position};
 use bevy_ecs::prelude::Component;
 
@@ -194,21 +193,4 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
             y: self.high_y,
         }
     }
-}
-
-/// A 2-dimensional oriented bounding box with coordinate type C
-#[derive(Debug, Component, Clone, PartialEq)]
-pub struct OrientedBoundingBox<C: Coordinate> {
-    center: Position<C>,
-    local_x: Direction,
-    local_y: Direction,
-    halfwidth_extent_x: C,
-    halfwidth_extent_y: C,
-}
-
-/// A 2-dimensional convex hull with coordinate type C
-#[derive(Debug, Component, Clone)]
-pub struct ConvexHull<C: Coordinate> {
-    /// The points which define a convex region
-    pub hull_points: Vec<Position<C>>,
 }
