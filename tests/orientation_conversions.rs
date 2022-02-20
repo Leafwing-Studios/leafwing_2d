@@ -56,15 +56,9 @@ fn direction_rotation_conversion() {
 }
 
 fn assert_rotation_quat_conversions_match(radians: f32) {
-    assert_eq!(
-        Quat::from_rotation_z(radians),
-        Quat::from(Rotation::from_radians(radians))
-    );
-
-    assert_eq!(
-        Rotation::from(Quat::from_rotation_z(radians)),
-        Rotation::from_radians(radians)
-    );
+    Quat::from_rotation_z(radians).assert_approx_eq(Quat::from(Rotation::from_radians(radians)));
+    Rotation::from(Quat::from_rotation_z(radians))
+        .assert_approx_eq(Rotation::from_radians(radians));
 }
 
 #[test]
@@ -81,15 +75,11 @@ fn rotation_quat_conversion() {
 }
 
 fn assert_direction_quat_conversions_match(radians: f32) {
-    assert_eq!(
-        Quat::from_rotation_z(radians),
-        Quat::from(Direction::from(Rotation::from_radians(radians)))
-    );
+    Quat::from_rotation_z(radians)
+        .assert_approx_eq(Quat::from(Direction::from(Rotation::from_radians(radians))));
 
-    assert_eq!(
-        Direction::from(Quat::from_rotation_z(radians)),
-        Direction::from(Rotation::from_radians(radians))
-    );
+    Direction::from(Quat::from_rotation_z(radians))
+        .assert_approx_eq(Direction::from(Rotation::from_radians(radians)));
 }
 
 #[test]
