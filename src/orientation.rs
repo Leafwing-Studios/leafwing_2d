@@ -31,7 +31,8 @@ mod orientation_trait {
 
         /// Asserts that `self` is approximately equal to `other`
         ///
-        /// The tolerance is 2 deci-degrees.
+        /// # Panics
+        /// Panics if the distance between `self` and `other` is greater than 2 deci-degrees.
         fn assert_approx_eq(&self, other: Self) {
             let distance: Rotation = self.distance(other);
             dbg!(self);
