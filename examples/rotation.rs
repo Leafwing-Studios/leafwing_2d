@@ -176,12 +176,9 @@ fn snap_to_player_system(
 ) {
     let &player_position = player_query.single();
 
-    for (mut enemy_rotation, enemy_position) in query.iter_mut() {
-        // do not rotate the enemy if the player is directly on top of them
-        if let Ok(rotation_to_player) = enemy_position.rotation_to(player_position) {
-            // rotate the enemy to face the player
-            *enemy_rotation = rotation_to_player;
-        }
+    for (mut enemy_rotation, &enemy_position) in query.iter_mut() {
+        // rotate to face the player
+        enemy_rotation.rotate_towards_position(enemy_position, player_position, None);
     }
 }
 
@@ -195,27 +192,14 @@ fn rotate_to_player_system(
     let &player_position = player_query.single();
 
     for (config, mut enemy_rotation, enemy_position) in query.iter_mut() {
-        // determine the direction towards the player
-        let maybe_rotation_to_player = enemy_position.rotation_to(player_position);
-
-        // if the player is on top of the enemy, we can early out
-        if maybe_rotation_to_player.is_err() {
-            continue;
-        }
-
-        let rotation_to_player: Rotation = maybe_rotation_to_player.unwrap();
-
-        // if the rotation is already correct then the enemy is already facing the player and
-        // we can early out
-        // note that `Rotation` is discretized, so we can check for exact equality
-        if *enemy_rotation == rotation_to_player {
-            continue;
-        }
-
         // compute the maximum amount that this entity is allowed to turn in this time step
         let max_rotation = Rotation::from_radians(config.rotation_speed * TIME_STEP);
 
         // rotate towards the player by up to the max_rotation
-        enemy_rotation.rotate_towards(rotation_to_player, max_rotation);
+        enemy_rotation.rotate_towards_position(
+            *enemy_position,
+            player_position,
+            Some(max_rotation),
+        );
     }
 }

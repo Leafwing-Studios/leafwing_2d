@@ -1,6 +1,6 @@
 //! 2-dimensional coordinates
 
-use crate::orientation::{Direction, NearlySingularConversion, Rotation};
+use crate::orientation::{Direction, NearlySingularConversion, Orientation, Rotation};
 use bevy_ecs::prelude::Component;
 use derive_more::{
     Add, AddAssign, Display, Div, DivAssign, Error, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
@@ -179,12 +179,11 @@ impl<C: Coordinate> Position<C> {
     /// ```
     #[inline]
     #[must_use]
-    pub fn rotation_to(
+    pub fn orientation_to<O: Orientation<C>>(
         self,
         other_position: Position<C>,
-    ) -> Result<Rotation, NearlySingularConversion> {
-        let net_position: Position<C> = other_position - self;
-        net_position.try_into()
+    ) -> Result<O, NearlySingularConversion> {
+        O::orientation_to_position(self, other_position)
     }
 
     /// Gets the [`Rotation`] that points towards this position, from `other_position`
@@ -422,7 +421,7 @@ mod basic_operations {
 mod conversions {
     use super::*;
     use crate::orientation::Direction;
-    use bevy_math::{Vec2, Vec3};
+    use bevy_math::{Quat, Vec2, Vec3};
     use bevy_transform::components::{GlobalTransform, Transform};
 
     impl<C: Coordinate> TryFrom<Vec2> for Position<C> {
@@ -465,6 +464,16 @@ mod conversions {
             let vec2: Vec2 = position.into();
 
             vec2.try_into()
+        }
+    }
+
+    impl<C: Coordinate> TryFrom<Position<C>> for Quat {
+        type Error = NearlySingularConversion;
+
+        fn try_from(position: Position<C>) -> Result<Quat, NearlySingularConversion> {
+            let direction: Direction = position.try_into()?;
+
+            Ok(direction.into())
         }
     }
 

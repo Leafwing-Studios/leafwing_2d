@@ -8,12 +8,20 @@ pub use orientation_trait::Orientation;
 pub use rotation::Rotation;
 
 mod orientation_trait {
-    use super::{Direction, Rotation, RotationDirection};
+    use super::{Direction, NearlySingularConversion, Rotation, RotationDirection};
+    use crate::{position::Position, prelude::Coordinate};
     use bevy_math::Quat;
     use core::fmt::Debug;
 
     /// A type that can represent a orientation in 2D space
-    pub trait Orientation: Sized + Debug + Into<Rotation> + Copy {
+    pub trait Orientation<C: Coordinate>:
+        Sized
+        + Debug
+        + From<Rotation>
+        + Into<Rotation>
+        + Copy
+        + TryFrom<Position<C>, Error = NearlySingularConversion>
+    {
         /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
         ///
         /// Simply subtract the two rotations if you want a signed value instead.
@@ -24,7 +32,7 @@ mod orientation_trait {
         ///
         /// The tolerance is 1 deci-degree.
         fn assert_approx_eq(&self, other: Self) {
-            let distance = self.distance(other);
+            let distance: Rotation = self.distance(other);
             dbg!(self);
             dbg!(other);
             assert!(distance <= Rotation::new(1));
@@ -49,9 +57,60 @@ mod orientation_trait {
                 RotationDirection::CounterClockwise
             }
         }
+
+        /// Computes the orientation facing from `current_position` to `other_position`
+        #[inline]
+        #[must_use]
+        fn orientation_to_position(
+            current_position: Position<C>,
+            other_position: Position<C>,
+        ) -> Result<Self, NearlySingularConversion> {
+            let net_position: Position<C> = other_position - current_position;
+            net_position.try_into()
+        }
+
+        /// Rotates `self` towards `target_orientation` by up to `max_rotation`
+        #[inline]
+        fn rotate_towards_orientation(
+            &mut self,
+            target_orientation: Self,
+            max_rotation: Option<Rotation>,
+        ) {
+            if let Some(max_rotation) = max_rotation {
+                if self.distance(target_orientation) <= max_rotation {
+                    *self = target_orientation;
+                } else {
+                    let delta_rotation = match self.rotation_direction(target_orientation) {
+                        RotationDirection::Clockwise => max_rotation,
+                        RotationDirection::CounterClockwise => -max_rotation,
+                    };
+                    let current_rotation: Rotation = (*self).into();
+                    let new_rotation: Rotation = current_rotation + delta_rotation;
+
+                    *self = new_rotation.into();
+                }
+            } else {
+                *self = target_orientation;
+            }
+        }
+
+        /// Rotates `self` towards `target_position` by up to `max_rotation`
+        #[inline]
+        fn rotate_towards_position(
+            &mut self,
+            current_position: Position<C>,
+            target_position: Position<C>,
+            max_rotation: Option<Rotation>,
+        ) {
+            if let Ok(target_orientation) =
+                Self::orientation_to_position(current_position, target_position)
+            {
+                self.rotate_towards_orientation(target_orientation, max_rotation);
+            }
+        }
     }
 
-    impl Orientation for Rotation {
+    impl<C: Coordinate> Orientation<C> for Rotation {
         #[inline]
         fn distance(&self, other: Rotation) -> Rotation {
             if self.deci_degrees >= other.deci_degrees {
@@ -66,19 +125,19 @@ mod orientation_trait {
         }
     }
 
-    impl Orientation for Direction {
+    impl<C: Coordinate> Orientation<C> for Direction {
         fn distance(&self, other: Direction) -> Rotation {
             let self_rotation: Rotation = (*self).into();
-            let other_rotation = other.into();
-            self_rotation.distance(other_rotation)
+            let other_rotation: Rotation = other.into();
+            Orientation::<C>::distance(&self_rotation, other_rotation)
         }
     }
 
-    impl Orientation for Quat {
+    impl<C: Coordinate> Orientation<C> for Quat {
         fn distance(&self, other: Quat) -> Rotation {
             let self_rotation: Rotation = (*self).into();
-            let other_rotation = other.into();
-            self_rotation.distance(other_rotation)
+            let other_rotation: Rotation = other.into();
+            Orientation::<C>::distance(&self_rotation, other_rotation)
         }
     }
 }
@@ -119,7 +178,7 @@ impl Default for RotationDirection {
 }
 
 mod rotation {
-    use super::{NearlySingularConversion, Orientation, RotationDirection};
+    use super::NearlySingularConversion;
     use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
@@ -180,21 +239,6 @@ mod rotation {
         #[must_use]
         pub const fn deci_degrees(&self) -> u16 {
             self.deci_degrees
-        }
-
-        /// Rotates `self` towards `target` by up to `max_rotation`
-        #[inline]
-        pub fn rotate_towards(&mut self, target: Rotation, max_rotation: Rotation) {
-            if self.distance(target) <= max_rotation {
-                *self = target;
-            } else {
-                let new_rotation = match self.rotation_direction(target) {
-                    RotationDirection::Clockwise => *self + max_rotation,
-                    RotationDirection::CounterClockwise => *self - max_rotation,
-                };
-
-                *self = new_rotation;
-            }
         }
     }
 
@@ -663,7 +707,7 @@ pub mod partitioning {
 
             Self::partitions()
             .iter()
-            .map(|&paritition| (paritition, rotation.distance(paritition.into())))
+            .map(|&partition| (partition, Orientation::<f32>::distance(&rotation, partition.into())))
             .reduce(|(paritition_1, distance_1), (partition_2, distance_2)| {
                 // Return the closest distance from the entire set of possibilities
                 if distance_1 < distance_2 {

@@ -20,7 +20,7 @@ fn orientation_alignment() {
     let due_north: Position<f32> = Position::new(0.0, 1.0);
     let origin = Position::default();
 
-    let rotation = origin.rotation_to(due_north).unwrap();
+    let rotation: Rotation = origin.orientation_to(due_north).unwrap();
     let direction = origin.direction_to(due_north).unwrap();
 
     assert_eq!(rotation, Rotation::NORTH);
