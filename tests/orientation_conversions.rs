@@ -21,7 +21,7 @@ fn orientation_alignment() {
     let origin = Position::default();
 
     let rotation: Rotation = origin.orientation_to(due_north).unwrap();
-    let direction = origin.direction_to(due_north).unwrap();
+    let direction: Direction = origin.orientation_to(due_north).unwrap();
 
     assert_eq!(rotation, Rotation::NORTH);
     assert_eq!(direction, Direction::NORTH);
@@ -99,8 +99,8 @@ fn assert_conversions_match(target_position: Position<f32>) {
 
     let origin = Position::<f32>::default();
 
-    let direction = origin.direction_to(target_position).unwrap();
-    let rotation = origin.rotation_to(target_position).unwrap();
+    let direction: Direction = origin.orientation_to(target_position).unwrap();
+    let rotation: Rotation = origin.orientation_to(target_position).unwrap();
     let quat = Quat::from_rotation_z(rotation.into_radians());
 
     let direction_from_rotation = Direction::from(rotation);

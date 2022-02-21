@@ -4,24 +4,17 @@ use bevy_math::Vec2;
 use derive_more::{Display, Error};
 
 pub use direction::Direction;
+pub use orientation_position_trait::OrientationPositionInterop;
 pub use orientation_trait::Orientation;
 pub use rotation::Rotation;
 
 mod orientation_trait {
-    use super::{Direction, NearlySingularConversion, Rotation, RotationDirection};
-    use crate::{position::Position, prelude::Coordinate};
+    use super::{Direction, Rotation, RotationDirection};
     use bevy_math::Quat;
     use core::fmt::Debug;
 
     /// A type that can represent a orientation in 2D space
-    pub trait Orientation<C: Coordinate>:
-        Sized
-        + Debug
-        + From<Rotation>
-        + Into<Rotation>
-        + Copy
-        + TryFrom<Position<C>, Error = NearlySingularConversion>
-    {
+    pub trait Orientation: Sized + Debug + From<Rotation> + Into<Rotation> + Copy {
         /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
         ///
         /// Simply subtract the two rotations if you want a signed value instead.
@@ -58,17 +51,6 @@ mod orientation_trait {
             }
         }
 
-        /// Computes the orientation facing from `current_position` to `other_position`
-        #[inline]
-        #[must_use]
-        fn orientation_to_position(
-            current_position: Position<C>,
-            other_position: Position<C>,
-        ) -> Result<Self, NearlySingularConversion> {
-            let net_position: Position<C> = other_position - current_position;
-            net_position.try_into()
-        }
-
         /// Rotates `self` towards `target_orientation` by up to `max_rotation`
         #[inline]
         fn rotate_towards_orientation(
@@ -93,6 +75,61 @@ mod orientation_trait {
                 *self = target_orientation;
             }
         }
+    }
+
+    impl Orientation for Rotation {
+        #[inline]
+        fn distance(&self, other: Rotation) -> Rotation {
+            if self.deci_degrees >= other.deci_degrees {
+                Rotation {
+                    deci_degrees: self.deci_degrees - other.deci_degrees,
+                }
+            } else {
+                Rotation {
+                    deci_degrees: other.deci_degrees - self.deci_degrees,
+                }
+            }
+        }
+    }
+
+    impl Orientation for Direction {
+        fn distance(&self, other: Direction) -> Rotation {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation: Rotation = other.into();
+            self_rotation.distance(other_rotation)
+        }
+    }
+
+    impl Orientation for Quat {
+        fn distance(&self, other: Quat) -> Rotation {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation: Rotation = other.into();
+            self_rotation.distance(other_rotation)
+        }
+    }
+}
+
+mod orientation_position_trait {
+    use crate::orientation::{NearlySingularConversion, Orientation, Rotation};
+    use crate::position::{Coordinate, Position};
+
+    /// Tools that require both a [`Positions`](Position) and an [`Orientations`](Orientation)
+    ///
+    /// This trait is automatically implemented for all types that meet its bounds.
+    /// This trait is distinct from [`Orientation`] to avoid polluting it with the generic `C`.
+    pub trait OrientationPositionInterop<C: Coordinate>:
+        Orientation + TryFrom<Position<C>, Error = NearlySingularConversion>
+    {
+        /// Computes the orientation facing from `current_position` to `other_position`
+        #[inline]
+        #[must_use]
+        fn orientation_to_position(
+            current_position: Position<C>,
+            other_position: Position<C>,
+        ) -> Result<Self, NearlySingularConversion> {
+            let net_position: Position<C> = other_position - current_position;
+            net_position.try_into()
+        }
 
         /// Rotates `self` towards `target_position` by up to `max_rotation`
         #[inline]
@@ -110,35 +147,11 @@ mod orientation_trait {
         }
     }
 
-    impl<C: Coordinate> Orientation<C> for Rotation {
-        #[inline]
-        fn distance(&self, other: Rotation) -> Rotation {
-            if self.deci_degrees >= other.deci_degrees {
-                Rotation {
-                    deci_degrees: self.deci_degrees - other.deci_degrees,
-                }
-            } else {
-                Rotation {
-                    deci_degrees: other.deci_degrees - self.deci_degrees,
-                }
-            }
-        }
-    }
-
-    impl<C: Coordinate> Orientation<C> for Direction {
-        fn distance(&self, other: Direction) -> Rotation {
-            let self_rotation: Rotation = (*self).into();
-            let other_rotation: Rotation = other.into();
-            Orientation::<C>::distance(&self_rotation, other_rotation)
-        }
-    }
-
-    impl<C: Coordinate> Orientation<C> for Quat {
-        fn distance(&self, other: Quat) -> Rotation {
-            let self_rotation: Rotation = (*self).into();
-            let other_rotation: Rotation = other.into();
-            Orientation::<C>::distance(&self_rotation, other_rotation)
-        }
+    impl<
+            C: Coordinate,
+            T: Orientation + TryFrom<Position<C>, Error = NearlySingularConversion>,
+        > OrientationPositionInterop<C> for T
+    {
     }
 }
 
@@ -707,7 +720,7 @@ pub mod partitioning {
 
             Self::partitions()
             .iter()
-            .map(|&partition| (partition, Orientation::<f32>::distance(&rotation, partition.into())))
+            .map(|&partition| (partition, rotation.distance(partition.into())))
             .reduce(|(paritition_1, distance_1), (partition_2, distance_2)| {
                 // Return the closest distance from the entire set of possibilities
                 if distance_1 < distance_2 {

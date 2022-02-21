@@ -4,7 +4,8 @@
 //! Used under the MIT License courtesy of Bevy contributors
 
 use bevy::{core::FixedTimestep, math::const_vec2, prelude::*};
-use leafwing_2d::{bounding::AxisAlignedBoundingBox, prelude::*};
+use leafwing_2d::bounding::AxisAlignedBoundingBox;
+use leafwing_2d::prelude::*;
 // This is part of the prelude of leafwing_2d, but clashes with the `bevy` version :/
 use leafwing_2d::orientation::Direction;
 

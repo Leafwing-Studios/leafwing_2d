@@ -1,6 +1,8 @@
 //! 2-dimensional coordinates
 
-use crate::orientation::{Direction, NearlySingularConversion, Orientation, Rotation};
+use crate::orientation::{
+    Direction, NearlySingularConversion, OrientationPositionInterop, Rotation,
+};
 use bevy_ecs::prelude::Component;
 use derive_more::{
     Add, AddAssign, Display, Div, DivAssign, Error, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
@@ -179,7 +181,7 @@ impl<C: Coordinate> Position<C> {
     /// ```
     #[inline]
     #[must_use]
-    pub fn orientation_to<O: Orientation<C>>(
+    pub fn orientation_to<O: OrientationPositionInterop<C>>(
         self,
         other_position: Position<C>,
     ) -> Result<O, NearlySingularConversion> {
