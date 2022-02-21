@@ -109,17 +109,19 @@ fn assert_conversions_match(target_position: Position<f32>) {
     let quat = origin_transform.rotation;
 
     let direction_from_rotation = Direction::from(rotation);
-    let rotation_from_direction = Rotation::from(direction);
-    let quat_from_direction = Quat::from(direction);
-    let quat_from_rotation = Quat::from(rotation);
     let direction_from_quat = Direction::from(quat);
-    let rotation_from_quat = Rotation::from(quat);
 
     direction.assert_approx_eq(direction_from_rotation);
     direction.assert_approx_eq(direction_from_quat);
 
+    let rotation_from_direction = Rotation::from(direction);
+    let rotation_from_quat = Rotation::from(quat);
+
     rotation.assert_approx_eq(rotation_from_direction);
     rotation.assert_approx_eq(rotation_from_quat);
+
+    let quat_from_direction = Quat::from(direction);
+    let quat_from_rotation = Quat::from(rotation);
 
     quat.assert_approx_eq(quat_from_direction);
     quat.assert_approx_eq(quat_from_rotation);
