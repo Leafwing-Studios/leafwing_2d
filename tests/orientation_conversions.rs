@@ -1,5 +1,4 @@
-use bevy::math::{Quat, Vec3};
-use bevy::transform::components::Transform;
+use bevy::math::Quat;
 use leafwing_2d::orientation::*;
 use leafwing_2d::position::Position;
 
@@ -98,15 +97,11 @@ fn direction_rotation_conversion() {
 fn assert_conversions_match(target_position: Position<f32>) {
     dbg!(target_position);
 
-    let target_vec3 = target_position.into();
     let origin = Position::<f32>::default();
-    let mut origin_transform = Transform::default();
-
-    origin_transform.look_at(target_vec3, Vec3::Z);
 
     let direction = origin.direction_to(target_position).unwrap();
     let rotation = origin.rotation_to(target_position).unwrap();
-    let quat = origin_transform.rotation;
+    let quat = Quat::from_rotation_z(rotation.into_radians());
 
     let direction_from_rotation = Direction::from(rotation);
     let direction_from_quat = Direction::from(quat);
