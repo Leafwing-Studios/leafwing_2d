@@ -11,6 +11,7 @@ pub use rotation::Rotation;
 mod orientation_trait {
     use super::{Direction, Rotation, RotationDirection};
     use bevy_math::Quat;
+    use bevy_transform::components::{GlobalTransform, Transform};
     use core::fmt::Debug;
 
     /// A type that can represent a orientation in 2D space
@@ -181,6 +182,22 @@ mod orientation_trait {
 
     impl Orientation for Quat {
         fn distance(&self, other: Quat) -> Rotation {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation: Rotation = other.into();
+            self_rotation.distance(other_rotation)
+        }
+    }
+
+    impl Orientation for Transform {
+        fn distance(&self, other: Transform) -> Rotation {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation: Rotation = other.into();
+            self_rotation.distance(other_rotation)
+        }
+    }
+
+    impl Orientation for GlobalTransform {
+        fn distance(&self, other: GlobalTransform) -> Rotation {
             let self_rotation: Rotation = (*self).into();
             let other_rotation: Rotation = other.into();
             self_rotation.distance(other_rotation)
@@ -712,6 +729,7 @@ mod direction {
 mod conversions {
     use super::{Direction, NearlySingularConversion, Rotation};
     use bevy_math::{Quat, Vec2, Vec3};
+    use bevy_transform::components::{GlobalTransform, Transform};
 
     impl From<Rotation> for Direction {
         fn from(rotation: Rotation) -> Direction {
@@ -796,6 +814,54 @@ mod conversions {
         fn from(direction: Direction) -> Quat {
             let rotation: Rotation = direction.into();
             rotation.into()
+        }
+    }
+
+    impl From<Transform> for Direction {
+        fn from(transform: Transform) -> Self {
+            transform.rotation.into()
+        }
+    }
+
+    impl From<GlobalTransform> for Direction {
+        fn from(transform: GlobalTransform) -> Self {
+            transform.rotation.into()
+        }
+    }
+
+    impl From<Direction> for Transform {
+        fn from(direction: Direction) -> Self {
+            Transform::from_rotation(direction.into())
+        }
+    }
+
+    impl From<Direction> for GlobalTransform {
+        fn from(direction: Direction) -> Self {
+            GlobalTransform::from_rotation(direction.into())
+        }
+    }
+
+    impl From<Transform> for Rotation {
+        fn from(transform: Transform) -> Self {
+            transform.rotation.into()
+        }
+    }
+
+    impl From<GlobalTransform> for Rotation {
+        fn from(transform: GlobalTransform) -> Self {
+            transform.rotation.into()
+        }
+    }
+
+    impl From<Rotation> for Transform {
+        fn from(rotation: Rotation) -> Self {
+            Transform::from_rotation(rotation.into())
+        }
+    }
+
+    impl From<Rotation> for GlobalTransform {
+        fn from(rotation: Rotation) -> Self {
+            GlobalTransform::from_rotation(rotation.into())
         }
     }
 }
