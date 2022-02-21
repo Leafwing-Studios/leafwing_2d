@@ -23,12 +23,12 @@ mod orientation_trait {
 
         /// Asserts that `self` is approximately equal to `other`
         ///
-        /// The tolerance is 1 deci-degree.
+        /// The tolerance is 2 deci-degrees.
         fn assert_approx_eq(&self, other: Self) {
             let distance: Rotation = self.distance(other);
             dbg!(self);
             dbg!(other);
-            assert!(distance <= Rotation::new(1));
+            assert!(distance <= Rotation::new(2));
         }
 
         /// Which direction is the shortest to rotate towards to reach `target`?
