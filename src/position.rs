@@ -57,13 +57,13 @@ impl<C: Coordinate> Position<C> {
 
 /// A type that can be used as a coordinate type for [`Position`]
 ///
-/// This trait has a blanket impl for all types that impl [`TryFrom<f32>`], and so is already implemented for all of the base float types.
-///
-/// If you are working with a grid-like position system, use one of the types provided in [`discrete_coordinates`] type
-/// (or your own [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) type),
-/// rather than a raw integer type.
-/// We cannot impl this trait for those types due to conflicting impls,
-/// and additional functionality is provided by the [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) trait.
+/// Typically, you will want to use one of a few strategies for your [`Coordinate`] type:
+/// - if you just need simple continuous coordinates, use [`f32`]
+/// - if you're working with a grid-like position system, use one of the types provided in [`discrete_coordinates`]
+///   - the [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) trait provides other useful functionality for your game!
+/// - if you have unusual needs (such as extremely large worlds or tight memory constraints),
+/// implement [`Coordinate`] and optionally [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) for your own type
+///    - in this type, you can wrap your own [`f64`], [`u8`], fixed-point number type or so on.
 pub trait Coordinate:
     Copy
     + Debug
