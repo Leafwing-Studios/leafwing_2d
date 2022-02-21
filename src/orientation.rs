@@ -583,7 +583,9 @@ mod conversions {
             if vec2.length_squared() == 0.0 {
                 Err(NearlySingularConversion)
             } else {
-                Ok(Direction { unit_vector: vec2 })
+                Ok(Direction {
+                    unit_vector: vec2.normalize(),
+                })
             }
         }
     }
