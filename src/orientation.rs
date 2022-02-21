@@ -127,7 +127,7 @@ mod rotation {
         /// Tenths of a degree, measured clockwise from midnight (x=0, y=1)
         ///
         /// 3600 make up a full circle.
-        deci_degrees: u16,
+        pub(crate) deci_degrees: u16,
     }
 
     // Useful methods
@@ -394,7 +394,7 @@ mod direction {
     /// ```
     #[derive(Component, Clone, Copy, Debug, PartialEq)]
     pub struct Direction {
-        unit_vector: Vec2,
+        pub(crate) unit_vector: Vec2,
     }
 
     impl Default for Direction {
@@ -549,7 +549,9 @@ mod conversions {
 
     impl From<Rotation> for Direction {
         fn from(rotation: Rotation) -> Direction {
-            Direction::new(rotation.into_xy())
+            Direction {
+                unit_vector: rotation.into_xy(),
+            }
         }
     }
 
@@ -581,7 +583,7 @@ mod conversions {
             if vec2.length_squared() == 0.0 {
                 Err(NearlySingularConversion)
             } else {
-                Ok(Direction::new(vec2))
+                Ok(Direction { unit_vector: vec2 })
             }
         }
     }
@@ -615,7 +617,9 @@ mod conversions {
             if vec2 == Vec2::ZERO {
                 Direction::default()
             } else {
-                Direction::new(vec2)
+                Direction {
+                    unit_vector: vec2.normalize(),
+                }
             }
         }
     }
