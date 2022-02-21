@@ -68,12 +68,23 @@ mod orientation_trait {
         }
 
         /// Rotates `self` towards `target_orientation` by up to `max_rotation`
+        ///
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::orientation::{Rotation, Orientation};
+        ///
+        /// let rotation = Rotation::SOUTH;
+        ///
+        /// // Without a `max_rotation`, the orientation snaps
+        /// rotation.rotate_towards(Rotation::WEST, None);
+        /// assert_eq!(rotation, Rotation::WEST);
+        ///
+        /// // With a `max_rotation`, we don't get all the way there
+        /// rotation.rotate_towards(Rotation::SOUTH, Some(Rotation::new(450)));
+        /// assert_eq!(rotation, Rotation::SOUTHWEST);
+        /// ```
         #[inline]
-        fn rotate_towards_orientation(
-            &mut self,
-            target_orientation: Self,
-            max_rotation: Option<Rotation>,
-        ) {
+        fn rotate_towards(&mut self, target_orientation: Self, max_rotation: Option<Rotation>) {
             if let Some(max_rotation) = max_rotation {
                 if self.distance(target_orientation) <= max_rotation {
                     *self = target_orientation;
@@ -163,7 +174,7 @@ mod orientation_position_trait {
             if let Ok(target_orientation) =
                 Self::orientation_to_position(current_position, target_position)
             {
-                self.rotate_towards_orientation(target_orientation, max_rotation);
+                self.rotate_towards(target_orientation, max_rotation);
             }
         }
     }
