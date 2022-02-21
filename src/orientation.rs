@@ -46,8 +46,17 @@ mod orientation_trait {
         /// ```rust
         /// use leafwing_2d::orientation::{Direction, Orientation, RotationDirection};
         ///
-        /// assert_eq!(Direction::WEST.rotation_direction(Direction::SOUTHEAST), RotationDirection::CounterClockwise);
-        /// assert_eq!(Direction::SOUTHEAST.rotation_direction(Direction::WEST), RotationDirection::Clockwise);
+        /// dbg!(1);
+        /// assert_eq!(Direction::NORTH.rotation_direction(Direction::NORTH), RotationDirection::Clockwise);
+        /// dbg!(2);
+        /// assert_eq!(Direction::NORTH.rotation_direction(Direction::EAST), RotationDirection::Clockwise);
+        /// dbg!(3);
+        /// assert_eq!(Direction::NORTH.rotation_direction(Direction::WEST), RotationDirection::CounterClockwise);
+        ///
+        /// dbg!(4);
+        /// assert_eq!(Direction::WEST.rotation_direction(Direction::SOUTH), RotationDirection::CounterClockwise);
+        /// dbg!(5);
+        /// assert_eq!(Direction::SOUTH.rotation_direction(Direction::WEST), RotationDirection::Clockwise);
         /// ```
         #[inline]
         #[must_use]
@@ -55,13 +64,7 @@ mod orientation_trait {
             let self_rotation: Rotation = (*self).into();
             let target_rotation: Rotation = target.into();
 
-            let initial_distance = if self_rotation.deci_degrees >= target_rotation.deci_degrees {
-                self_rotation.deci_degrees - target_rotation.deci_degrees
-            } else {
-                target_rotation.deci_degrees - self_rotation.deci_degrees
-            };
-
-            if initial_distance <= Rotation::FULL_CIRCLE / 2 {
+            let obvious_rotation = if self_rotation <= target_rotation {
                 RotationDirection::Clockwise
             } else {
                 RotationDirection::CounterClockwise
@@ -251,6 +254,18 @@ pub enum RotationDirection {
     Clockwise,
     /// Corresponds to a negative rotation
     CounterClockwise,
+}
+
+impl RotationDirection {
+    /// Reverese the direction into the opposite enum variant
+    pub fn reverse(self) -> RotationDirection {
+        use RotationDirection::*;
+
+        match self {
+            Clockwise => CounterClockwise,
+            CounterClockwise => Clockwise,
+        }
+    }
 }
 
 impl Default for RotationDirection {
