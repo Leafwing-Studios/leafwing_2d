@@ -33,8 +33,11 @@ mod orientation_trait {
         ///
         /// # Panics
         /// Panics if the distance between `self` and `other` is greater than 2 deci-degrees.
-        fn assert_approx_eq(&self, other: Self) {
-            let distance: Rotation = self.distance(other);
+        fn assert_approx_eq(&self, other: impl Orientation) {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation: Rotation = other.into();
+
+            let distance: Rotation = self_rotation.distance(other_rotation);
             dbg!(self);
             dbg!(other);
             assert!(distance <= Rotation::new(2));

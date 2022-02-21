@@ -164,7 +164,7 @@ fn player_movement_system(
     // update the ship translation with our new translation delta
     *position += translation_delta
         .try_into()
-        .expect("This conversion is infallible.");
+        .expect("This conversion is infallible for `Position<f32>`.");
 
     // bound the ship within the invisible level bounds
     *position = PLAY_AREA.clamp(*position);

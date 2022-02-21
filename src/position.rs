@@ -5,6 +5,7 @@ use bevy_ecs::prelude::Component;
 use derive_more::{
     Add, AddAssign, Display, Div, DivAssign, Error, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
 };
+pub use positionlike::Positionlike;
 use std::{fmt::Debug, ops::*};
 
 /// A float could not be converted into a [`Coordinate`]
@@ -465,6 +466,63 @@ mod conversions {
             let y = C::try_from_f32(transform.translation.y)?;
 
             Ok(Position { x, y })
+        }
+    }
+}
+
+mod positionlike {
+    use super::{Coordinate, Position};
+    use bevy_math::{Vec2, Vec3};
+    use bevy_transform::components::{GlobalTransform, Transform};
+    use core::fmt::Debug;
+
+    /// A type that can be treated like a 2D (x,y) [`Position`]
+    pub trait Positionlike: Sized + Copy + Debug {
+        /// Converts this type into a [Vec2]
+        fn into_vec2(self) -> Vec2;
+
+        /// Asserts that `self` is approximately equal to `other`
+        ///
+        /// # Panics
+        /// Panics if the distance between `self` and `other` is greater than 0.1.
+        fn assert_approx_eq(&self, other: impl Positionlike) {
+            let self_vec2: Vec2 = self.into_vec2();
+            let other_vec2: Vec2 = other.into_vec2();
+
+            let distance = self_vec2.distance(other_vec2);
+            dbg!(self);
+            dbg!(other);
+            assert!(distance <= 0.1);
+        }
+    }
+
+    impl<C: Coordinate> Positionlike for Position<C> {
+        fn into_vec2(self) -> Vec2 {
+            self.into()
+        }
+    }
+
+    impl Positionlike for Transform {
+        fn into_vec2(self) -> Vec2 {
+            self.translation.truncate()
+        }
+    }
+
+    impl Positionlike for GlobalTransform {
+        fn into_vec2(self) -> Vec2 {
+            self.translation.truncate()
+        }
+    }
+
+    impl Positionlike for Vec2 {
+        fn into_vec2(self) -> Vec2 {
+            self
+        }
+    }
+
+    impl Positionlike for Vec3 {
+        fn into_vec2(self) -> Vec2 {
+            self.truncate()
         }
     }
 }
