@@ -1,6 +1,6 @@
 //! Demonstrates how to handle rotations using the `leafwing_2d::Orientation` methods
 //!
-//! This is a direct conversion of https://github.com/bevyengine/bevy/blob/main/examples/2d/rotation.rs
+//! This is a direct conversion of the [`bevy` example of the same name](https://github.com/bevyengine/bevy/blob/main/examples/2d/rotation.rs)
 //! Used under the MIT License courtesy of Bevy contributors
 
 use bevy::{core::FixedTimestep, math::const_vec2, prelude::*};
