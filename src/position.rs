@@ -136,7 +136,6 @@ impl<C: Coordinate> Position<C> {
     /// assert_eq!(origin.direction_to(target), Ok(Direction::NORTH));
     /// ```
     #[inline]
-    #[must_use]
     pub fn direction_to(
         self,
         other_position: Position<C>,
@@ -158,7 +157,6 @@ impl<C: Coordinate> Position<C> {
     /// assert_eq!(origin.direction_from(target), Ok(Direction::SOUTH));
     /// ```
     #[inline]
-    #[must_use]
     pub fn direction_from(
         self,
         other_position: Position<C>,
@@ -180,7 +178,6 @@ impl<C: Coordinate> Position<C> {
     /// assert_eq!(origin.rotation_to(target), Ok(Rotation::NORTH));
     /// ```
     #[inline]
-    #[must_use]
     pub fn orientation_to<O: OrientationPositionInterop<C>>(
         self,
         other_position: Position<C>,
@@ -201,7 +198,6 @@ impl<C: Coordinate> Position<C> {
     /// assert_eq!(origin.rotation_from(target), Ok(Rotation::NORTH));
     /// ```
     #[inline]
-    #[must_use]
     pub fn rotation_from(
         self,
         other_position: Position<C>,

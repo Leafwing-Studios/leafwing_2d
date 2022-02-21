@@ -122,7 +122,6 @@ mod orientation_position_trait {
     {
         /// Computes the orientation facing from `current_position` to `other_position`
         #[inline]
-        #[must_use]
         fn orientation_to_position(
             current_position: Position<C>,
             other_position: Position<C>,
