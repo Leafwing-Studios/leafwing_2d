@@ -1,31 +1,21 @@
-use bevy::ecs::query::{FilterFetch, WorldQuery};
 use bevy::prelude::*;
 use core::fmt::Debug;
 use leafwing_2d::orientation::Direction;
 use leafwing_2d::prelude::*;
 
 trait AppExtension {
-    fn assert_component_eq<C, F>(&mut self, value: &C)
-    where
-        C: Component + PartialEq + Debug,
-        F: WorldQuery,
-        <F as WorldQuery>::Fetch: FilterFetch;
+    fn assert_component_eq<C: Component + PartialEq + Debug>(&mut self, value: &C);
 
-    fn set_component<C, F>(&mut self, value: &C)
-    where
-        C: Component + PartialEq + Debug + Clone,
-        F: WorldQuery,
-        <F as WorldQuery>::Fetch: FilterFetch;
+    fn set_component<C: Component + PartialEq + Debug + Clone>(&mut self, value: C);
+
+    fn assert_orientation_approx_eq<C: Component + Orientation>(&mut self, value: C);
+
+    fn assert_positionlike_approx_eq<C: Component + Positionlike>(&mut self, value: C);
 }
 
 impl AppExtension for App {
-    fn assert_component_eq<C, F>(&mut self, value: &C)
-    where
-        C: Component + PartialEq + Debug,
-        F: WorldQuery,
-        <F as WorldQuery>::Fetch: FilterFetch,
-    {
-        let mut query_state = self.world.query_filtered::<(Entity, &C), F>();
+    fn assert_component_eq<C: Component + PartialEq + Debug>(&mut self, value: &C) {
+        let mut query_state = self.world.query::<(Entity, &C)>();
         for (entity, component) in query_state.iter(&self.world) {
             if component != value {
                 panic!(
@@ -35,17 +25,26 @@ impl AppExtension for App {
         }
     }
 
-    fn set_component<C, F>(&mut self, value: &C)
-    where
-        C: Component + PartialEq + Debug + Clone,
-        F: WorldQuery,
-        <F as WorldQuery>::Fetch: FilterFetch,
-    {
-        let mut query_state = self.world.query_filtered::<&mut C, F>();
+    fn set_component<C: Component + PartialEq + Debug + Clone>(&mut self, value: C) {
+        let mut query_state = self.world.query::<&mut C>();
         for mut component in query_state.iter_mut(&mut self.world) {
-            if *component != *value {
+            if *component != value {
                 *component = value.clone();
             }
+        }
+    }
+
+    fn assert_orientation_approx_eq<C: Component + Orientation>(&mut self, value: C) {
+        let mut query_state = self.world.query::<&C>();
+        for &component in query_state.iter(&self.world) {
+            component.assert_approx_eq(value);
+        }
+    }
+
+    fn assert_positionlike_approx_eq<C: Component + Positionlike>(&mut self, value: C) {
+        let mut query_state = self.world.query::<&C>();
+        for &component in query_state.iter(&self.world) {
+            component.assert_approx_eq(value);
         }
     }
 }
@@ -77,8 +76,8 @@ fn assert_orientation_matches(query: Query<(Option<&Rotation>, Option<&Direction
 }
 
 fn assert_position_matches(query: Query<(&Position<f32>, &Transform)>) {
-    for (&position, &transform) in query.iter() {
-        transform.assert_approx_eq(position);
+    for (&position, transform) in query.iter() {
+        Positionlike::assert_approx_eq(transform, position);
     }
 }
 
@@ -90,39 +89,39 @@ fn sync_orientation() {
     app.update();
 
     // Changing direction
-    app.set_component::<Direction, ()>(&Direction::NORTH);
+    app.set_component(Direction::NORTH);
     app.update();
-    app.assert_component_eq::<Rotation, ()>(&Rotation::NORTH);
-    app.assert_component_eq::<Transform, ()>(&Transform::from_rotation(Direction::NORTH.into()));
+    app.assert_orientation_approx_eq(Rotation::NORTH);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::NORTH.into()));
 
     // Changing rotation
-    app.set_component::<Rotation, ()>(&Rotation::EAST);
+    app.set_component(Rotation::EAST);
     app.update();
-    app.assert_component_eq::<Direction, ()>(&Direction::EAST);
-    app.assert_component_eq::<Transform, ()>(&Transform::from_rotation(Direction::EAST.into()));
+    app.assert_orientation_approx_eq(Direction::EAST);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::EAST.into()));
 
     // Changing rotation and direction (rotation wins)
-    app.set_component::<Rotation, ()>(&Rotation::WEST);
-    app.set_component::<Direction, ()>(&Direction::SOUTH);
+    app.set_component(Rotation::WEST);
+    app.set_component(Direction::SOUTH);
     app.update();
-    app.assert_component_eq::<Direction, ()>(&Direction::WEST);
-    app.assert_component_eq::<Rotation, ()>(&Rotation::WEST);
-    app.assert_component_eq::<Transform, ()>(&Transform::from_rotation(Direction::WEST.into()));
+    app.assert_orientation_approx_eq(Direction::WEST);
+    app.assert_orientation_approx_eq(Rotation::WEST);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::WEST.into()));
 
     // Changing transform quat
-    app.set_component::<Transform, ()>(&Transform::from_rotation(Rotation::NORTHEAST.into()));
+    app.set_component(Transform::from_rotation(Rotation::NORTHEAST.into()));
     app.update();
-    app.assert_component_eq::<Direction, ()>(&Direction::NORTHEAST);
-    app.assert_component_eq::<Rotation, ()>(&Rotation::NORTHEAST);
-    app.assert_component_eq::<Transform, ()>(&Transform::from_rotation(Direction::WEST.into()));
+    app.assert_orientation_approx_eq(Direction::NORTHEAST);
+    app.assert_orientation_approx_eq(Rotation::NORTHEAST);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::WEST.into()));
 
     // Changing transform and direction (direction wins)
-    app.set_component::<Transform, ()>(&Transform::from_rotation(Rotation::SOUTHEAST.into()));
-    app.set_component::<Direction, ()>(&Direction::NORTH);
+    app.set_component(Transform::from_rotation(Rotation::SOUTHEAST.into()));
+    app.set_component(Direction::NORTH);
     app.update();
-    app.assert_component_eq::<Direction, ()>(&Direction::NORTHEAST);
-    app.assert_component_eq::<Rotation, ()>(&Rotation::NORTHEAST);
-    app.assert_component_eq::<Transform, ()>(&Transform::from_rotation(Direction::WEST.into()));
+    app.assert_orientation_approx_eq(Direction::NORTHEAST);
+    app.assert_orientation_approx_eq(Rotation::NORTHEAST);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::WEST.into()));
 }
 
 #[test]
@@ -133,26 +132,26 @@ fn sync_position() {
     app.update();
 
     // Changing position
-    app.set_component::<Position<f32>, ()>(&Position::new(1.0, 1.0));
+    app.set_component(Position::new(1.0, 1.0));
     app.update();
-    app.assert_component_eq::<Transform, ()>(&Transform::from_xyz(1.0, 1.0, 0.0));
+    app.assert_positionlike_approx_eq(Transform::from_xyz(1.0, 1.0, 0.0));
 
     // Changing transform translation
-    app.set_component::<Transform, ()>(&Transform::from_xyz(2.0, 2.0, 0.0));
+    app.set_component(Transform::from_xyz(2.0, 2.0, 0.0));
     app.update();
-    app.assert_component_eq::<Position<f32>, ()>(&Position::new(2.0, 2.0));
+    app.assert_positionlike_approx_eq(Position::new(2.0, 2.0));
 
     // Changing transform and position (position wins)
-    app.set_component::<Position<f32>, ()>(&Position::new(3.0, 3.0));
-    app.set_component::<Transform, ()>(&Transform::from_xyz(0.0, 42.0, 0.0));
+    app.set_component(Position::new(3.0, 3.0));
+    app.set_component(Transform::from_xyz(0.0, 42.0, 0.0));
     app.update();
-    app.assert_component_eq::<Transform, ()>(&Transform::from_xyz(3.0, 3.0, 0.0));
-    app.assert_component_eq::<Position<f32>, ()>(&Position::new(3.0, 3.0));
+    app.assert_positionlike_approx_eq(Transform::from_xyz(3.0, 3.0, 0.0));
+    app.assert_positionlike_approx_eq(Position::new(3.0, 3.0));
 
     // Z is unmodified
-    app.set_component::<Transform, ()>(&Transform::from_xyz(0.0, 42.0, 5.0));
-    app.set_component::<Position<f32>, ()>(&Position::new(4.0, 4.0));
+    app.set_component(Transform::from_xyz(0.0, 42.0, 5.0));
+    app.set_component(Position::new(4.0, 4.0));
 
     app.update();
-    app.assert_component_eq::<Transform, ()>(&Transform::from_xyz(3.0, 3.0, 5.0));
+    app.assert_positionlike_approx_eq(Transform::from_xyz(3.0, 3.0, 5.0));
 }
