@@ -392,9 +392,17 @@ mod direction {
     /// assert_eq!(Direction::SOUTH * 3.0, Vec2::new(0.0, -3.0));
     /// assert_eq!(Direction::EAST / 2.0, Vec2::new(0.5, 0.0));
     /// ```
-    #[derive(Component, Clone, Copy, Debug, PartialEq, Default)]
+    #[derive(Component, Clone, Copy, Debug, PartialEq)]
     pub struct Direction {
         unit_vector: Vec2,
+    }
+
+    impl Default for Direction {
+        /// [`Direction::NORTH`] is the default direction,
+        /// as it is consistent with the default [`Rotation`]
+        fn default() -> Direction {
+            Direction::NORTH
+        }
     }
 
     impl Direction {
@@ -618,8 +626,13 @@ mod conversions {
             // +Y is the default direction, we need to rotate it by the quaternion
             // in order to receive the new direction
             // We must use the inverse quaternion to ensure that the rotation is applied in the correct direction.
-            let vec3 = quaternion.inverse().mul_vec3(Vec3::Y);
-            Direction::new(vec3.truncate())
+            let vec2 = quaternion.inverse().mul_vec3(Vec3::Y).truncate();
+
+            if vec2 == Vec2::ZERO {
+                Direction::default()
+            } else {
+                Direction::new(vec2)
+            }
         }
     }
 
