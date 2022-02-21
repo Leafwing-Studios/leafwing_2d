@@ -17,7 +17,15 @@ mod orientation_trait {
     pub trait Orientation: Sized + Debug + From<Rotation> + Into<Rotation> + Copy {
         /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
         ///
+        /// The shortest path will always be taken, and so this value ranges between 0 and 180 degrees.
         /// Simply subtract the two rotations if you want a signed value instead.
+        ///
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::orientation::{Orientation, Direction, Rotation};
+        ///
+        /// Direction::NORTH.distance(Direction::SOUTHWEST).assert_approx_eq(Rotation::from_degrees(135.));
+        /// ```
         #[must_use]
         fn distance(&self, other: Self) -> Rotation;
 
@@ -35,7 +43,16 @@ mod orientation_trait {
         #[inline]
         #[must_use]
         fn rotation_direction(&self, target: Self) -> RotationDirection {
-            if self.distance(target).deci_degrees <= Rotation::FULL_CIRCLE / 2 {
+            let self_rotation: Rotation = (*self).into();
+            let target_rotation: Rotation = target.into();
+
+            let initial_distance = if self_rotation.deci_degrees >= target_rotation.deci_degrees {
+                self_rotation.deci_degrees - target_rotation.deci_degrees
+            } else {
+                target_rotation.deci_degrees - self_rotation.deci_degrees
+            };
+
+            if initial_distance <= Rotation::FULL_CIRCLE / 2 {
                 RotationDirection::Clockwise
             } else {
                 RotationDirection::CounterClockwise
@@ -71,13 +88,19 @@ mod orientation_trait {
     impl Orientation for Rotation {
         #[inline]
         fn distance(&self, other: Rotation) -> Rotation {
-            if self.deci_degrees >= other.deci_degrees {
+            let initial_distance = if self.deci_degrees >= other.deci_degrees {
+                self.deci_degrees - other.deci_degrees
+            } else {
+                other.deci_degrees - self.deci_degrees
+            };
+
+            if initial_distance <= Rotation::FULL_CIRCLE / 2 {
                 Rotation {
-                    deci_degrees: self.deci_degrees - other.deci_degrees,
+                    deci_degrees: initial_distance,
                 }
             } else {
                 Rotation {
-                    deci_degrees: other.deci_degrees - self.deci_degrees,
+                    deci_degrees: Rotation::FULL_CIRCLE - initial_distance,
                 }
             }
         }
