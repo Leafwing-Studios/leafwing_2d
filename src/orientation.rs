@@ -42,20 +42,19 @@ mod orientation_trait {
 
         /// Which [`RotationDirection`] is the shortest to rotate towards to reach `target`?
         ///
+        /// In the case of ties, [`RotationDirection::Clockwise`] will be returned.
+        ///
         /// # Example
         /// ```rust
         /// use leafwing_2d::orientation::{Direction, Orientation, RotationDirection};
         ///
-        /// dbg!(1);
         /// assert_eq!(Direction::NORTH.rotation_direction(Direction::NORTH), RotationDirection::Clockwise);
-        /// dbg!(2);
+        /// assert_eq!(Direction::NORTH.rotation_direction(Direction::SOUTH), RotationDirection::Clockwise);
+        ///
         /// assert_eq!(Direction::NORTH.rotation_direction(Direction::EAST), RotationDirection::Clockwise);
-        /// dbg!(3);
         /// assert_eq!(Direction::NORTH.rotation_direction(Direction::WEST), RotationDirection::CounterClockwise);
         ///
-        /// dbg!(4);
         /// assert_eq!(Direction::WEST.rotation_direction(Direction::SOUTH), RotationDirection::CounterClockwise);
-        /// dbg!(5);
         /// assert_eq!(Direction::SOUTH.rotation_direction(Direction::WEST), RotationDirection::Clockwise);
         /// ```
         #[inline]
@@ -64,7 +63,9 @@ mod orientation_trait {
             let self_rotation: Rotation = (*self).into();
             let target_rotation: Rotation = target.into();
 
-            let obvious_rotation = if self_rotation <= target_rotation {
+            let rotation_to = target_rotation - self_rotation;
+
+            if rotation_to <= Rotation::new(1800) {
                 RotationDirection::Clockwise
             } else {
                 RotationDirection::CounterClockwise
