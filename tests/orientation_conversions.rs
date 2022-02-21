@@ -48,6 +48,16 @@ fn rotation_from_radians() {
 }
 
 #[test]
+fn direction_to_quat() {
+    use core::f32::consts::TAU;
+
+    Quat::from_rotation_z(0.0).assert_approx_eq(Direction::NORTH.into());
+    Quat::from_rotation_z(TAU / 4.0).assert_approx_eq(Direction::EAST.into());
+    Quat::from_rotation_z(TAU / 2.0).assert_approx_eq(Direction::SOUTH.into());
+    Quat::from_rotation_z(3.0 * TAU / 4.0).assert_approx_eq(Direction::WEST.into());
+}
+
+#[test]
 fn quat_to_direction() {
     use core::f32::consts::TAU;
 
@@ -65,6 +75,16 @@ fn rotation_to_quat() {
     Quat::from_rotation_z(TAU / 4.0).assert_approx_eq(Rotation::EAST.into());
     Quat::from_rotation_z(TAU / 2.0).assert_approx_eq(Rotation::SOUTH.into());
     Quat::from_rotation_z(3.0 * TAU / 4.0).assert_approx_eq(Rotation::WEST.into());
+}
+
+#[test]
+fn quat_to_rotation() {
+    use core::f32::consts::TAU;
+
+    Rotation::NORTH.assert_approx_eq(Quat::from_rotation_z(0.0).into());
+    Rotation::EAST.assert_approx_eq(Quat::from_rotation_z(TAU / 4.0).into());
+    Rotation::SOUTH.assert_approx_eq(Quat::from_rotation_z(TAU / 2.0).into());
+    Rotation::WEST.assert_approx_eq(Quat::from_rotation_z(3.0 * TAU / 4.0).into());
 }
 
 #[test]
