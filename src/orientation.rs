@@ -374,7 +374,7 @@ mod direction {
     use super::rotation::Rotation;
     use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
-    use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
+    use core::ops::{Add, Div, Mul, Neg, Sub};
     use std::f32::consts::SQRT_2;
 
     /// A 2D unit vector that represents a direction
@@ -480,33 +480,17 @@ mod direction {
     }
 
     impl Add for Direction {
-        type Output = Direction;
-        fn add(self, other: Direction) -> Direction {
-            Self {
-                unit_vector: (self.unit_vector + other.unit_vector).normalize_or_zero(),
-            }
-        }
-    }
-
-    impl AddAssign for Direction {
-        fn add_assign(&mut self, other: Direction) {
-            *self = *self + other;
+        type Output = Vec2;
+        fn add(self, other: Direction) -> Vec2 {
+            self.unit_vector + other.unit_vector
         }
     }
 
     impl Sub for Direction {
-        type Output = Direction;
+        type Output = Vec2;
 
-        fn sub(self, rhs: Direction) -> Direction {
-            Self {
-                unit_vector: (self.unit_vector - rhs.unit_vector).normalize_or_zero(),
-            }
-        }
-    }
-
-    impl SubAssign for Direction {
-        fn sub_assign(&mut self, other: Direction) {
-            *self = *self - other;
+        fn sub(self, rhs: Direction) -> Vec2 {
+            self.unit_vector - rhs.unit_vector
         }
     }
 
