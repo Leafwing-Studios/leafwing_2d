@@ -4,53 +4,59 @@ use bevy_math::{Quat, Vec2};
 use derive_more::{Display, Error};
 
 pub use direction::Direction;
+pub use orientation_trait::Orientation;
 pub use rotation::Rotation;
 
-/// A type that can represent a orientation in 2D space
-pub trait Orientation {
-    /// The type used to define the tolerance for [`Orientation::assert_approx_equal`]
-    type Tolerance;
-    /// The maximum allowable error for [`Orientation::assert_approx_equal`]
-    const TOL: Self::Tolerance;
+mod orientation_trait {
+    use super::{Direction, Rotation};
+    use bevy_math::Quat;
 
-    /// Asserts that `self` is approximately equal to `other`
-    ///
-    /// The tolerance is given by the [`ROTATION_TOL`] / [`QUAT_TOL`] constant.
-    fn assert_approx_eq(&self, other: Self);
-}
+    /// A type that can represent a orientation in 2D space
+    pub trait Orientation {
+        /// The type used to define the tolerance for [`Orientation::assert_approx_equal`]
+        type Tolerance;
+        /// The maximum allowable error for [`Orientation::assert_approx_equal`]
+        const TOL: Self::Tolerance;
 
-impl Orientation for Rotation {
-    type Tolerance = Rotation;
-    const TOL: Rotation = Rotation::new(1);
-
-    fn assert_approx_eq(&self, other: Rotation) {
-        let distance = self.distance(other);
-        dbg!(self);
-        dbg!(other);
-        assert!(distance <= Self::TOL);
+        /// Asserts that `self` is approximately equal to `other`
+        ///
+        /// The tolerance is given by the [`ROTATION_TOL`] / [`QUAT_TOL`] constant.
+        fn assert_approx_eq(&self, other: Self);
     }
-}
 
-impl Orientation for Direction {
-    type Tolerance = Rotation;
-    const TOL: Rotation = Rotation::new(1);
+    impl Orientation for Rotation {
+        type Tolerance = Rotation;
+        const TOL: Rotation = Rotation::new(1);
 
-    fn assert_approx_eq(&self, other: Direction) {
-        let distance = self.distance(other);
-        dbg!(self);
-        dbg!(other);
-        assert!(distance <= Self::TOL);
+        fn assert_approx_eq(&self, other: Rotation) {
+            let distance = self.distance(other);
+            dbg!(self);
+            dbg!(other);
+            assert!(distance <= Self::TOL);
+        }
     }
-}
 
-impl Orientation for Quat {
-    type Tolerance = f32;
-    const TOL: f32 = 0.01;
+    impl Orientation for Direction {
+        type Tolerance = Rotation;
+        const TOL: Rotation = Rotation::new(1);
 
-    fn assert_approx_eq(&self, other: Quat) {
-        dbg!(self);
-        dbg!(other);
-        assert!(Quat::abs_diff_eq(*self, other, Self::TOL));
+        fn assert_approx_eq(&self, other: Direction) {
+            let distance = self.distance(other);
+            dbg!(self);
+            dbg!(other);
+            assert!(distance <= Self::TOL);
+        }
+    }
+
+    impl Orientation for Quat {
+        type Tolerance = f32;
+        const TOL: f32 = 0.01;
+
+        fn assert_approx_eq(&self, other: Quat) {
+            dbg!(self);
+            dbg!(other);
+            assert!(Quat::abs_diff_eq(*self, other, Self::TOL));
+        }
     }
 }
 
