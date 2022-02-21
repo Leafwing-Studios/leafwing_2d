@@ -154,9 +154,24 @@ mod orientation_position_trait {
     pub trait OrientationPositionInterop<C: Coordinate>:
         Orientation + TryFrom<Position<C>, Error = NearlySingularConversion>
     {
-        /// Computes the orientation facing from `position_a` to `position_b`
+        /// Computes the orientation from `position_a` to `position_b`
+        ///
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::orientation::{OrientationPositionInterop, Rotation};
+        /// use leafwing_2d::position::Position;
+        ///
+        /// let player: Position<f64> = Postion::default();
+        /// let target: Position<f64> = Postion::new(1., 1.);
+        ///
+        /// let rotation_to = Rotation::orientation_between_positions(player, target).expect("These positions are distinct.");
+        /// let rotation_from = Rotation::orientation_between_positions(target, player).expect("These positions are distinct.");
+        ///
+        /// rotation_to.assert_approx_eq(Rotation::NORTHEAST);
+        /// rotation_from.assert_approx_eq(Rotation::SOUTHWEST);
+        /// ```
         #[inline]
-        fn orientation_to_position(
+        fn orientation_between_positions(
             position_a: Position<C>,
             position_b: Position<C>,
         ) -> Result<Self, NearlySingularConversion> {
@@ -165,6 +180,27 @@ mod orientation_position_trait {
         }
 
         /// Rotates `self` towards `target_position` by up to `max_rotation`
+        ///
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::orientation::{OrientationPositionInterop, Direction};
+        /// use leafwing_2d::position::Position;
+        ///
+        /// let player_position: Position<f16> = Postion::default();
+        /// let target_position: Position<f16> = Postion::new(1., 1.);
+        ///
+        /// let player_direction = Direction::NORTH;
+        ///
+        /// // Without a `max_rotation`, the orientation snaps
+        /// player_direction.rotate_towards_position(player_position, target_position, None);
+        /// player_direction.assert_approx_eq(Direction::NORTHEAST);
+        ///
+        /// // With a `max_roatation`, the rotation is limited
+        /// let new_position: Position<f16> = Postion::new(-1., -1.);
+        /// player_direction.rotate_towards_position(player_position, new_position, Some(Rotation::from_degrees(45.)));
+        ///
+        /// player_direction.assert_approx_eq(Direction::NORTH);
+        /// ```
         #[inline]
         fn rotate_towards_position(
             &mut self,
@@ -173,7 +209,7 @@ mod orientation_position_trait {
             max_rotation: Option<Rotation>,
         ) {
             if let Ok(target_orientation) =
-                Self::orientation_to_position(current_position, target_position)
+                Self::orientation_between_positions(current_position, target_position)
             {
                 self.rotate_towards(target_orientation, max_rotation);
             }

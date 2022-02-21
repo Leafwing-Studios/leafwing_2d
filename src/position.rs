@@ -140,7 +140,7 @@ impl<C: Coordinate> Position<C> {
         &self,
         other_position: Position<C>,
     ) -> Result<O, NearlySingularConversion> {
-        O::orientation_to_position(*self, other_position)
+        O::orientation_between_positions(*self, other_position)
     }
 
     /// Gets the [`Orientation`](crate::orientation::Orientation) that points towards from this position from `other_position`
@@ -161,7 +161,7 @@ impl<C: Coordinate> Position<C> {
         &self,
         other_position: Position<C>,
     ) -> Result<O, NearlySingularConversion> {
-        O::orientation_to_position(other_position, *self)
+        O::orientation_between_positions(other_position, *self)
     }
 }
 
