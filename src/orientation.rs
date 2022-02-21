@@ -1,6 +1,6 @@
 //! Direction and rotation for spinning around in 2 dimensions
 
-use bevy_math::{Quat, Vec2};
+use bevy_math::Vec2;
 use derive_more::{Display, Error};
 
 pub use direction::Direction;
@@ -8,54 +8,77 @@ pub use orientation_trait::Orientation;
 pub use rotation::Rotation;
 
 mod orientation_trait {
-    use super::{Direction, Rotation};
+    use super::{Direction, Rotation, RotationDirection};
     use bevy_math::Quat;
+    use core::fmt::Debug;
 
     /// A type that can represent a orientation in 2D space
-    pub trait Orientation {
-        /// The type used to define the tolerance for [`Orientation::assert_approx_equal`]
-        type Tolerance;
-        /// The maximum allowable error for [`Orientation::assert_approx_equal`]
-        const TOL: Self::Tolerance;
+    pub trait Orientation: Sized + Debug + Into<Rotation> + Copy {
+        /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
+        ///
+        /// Simply subtract the two rotations if you want a signed value instead.
+        #[must_use]
+        fn distance(&self, other: Self) -> Rotation;
 
         /// Asserts that `self` is approximately equal to `other`
         ///
-        /// The tolerance is given by the [`ROTATION_TOL`] / [`QUAT_TOL`] constant.
-        fn assert_approx_eq(&self, other: Self);
-    }
-
-    impl Orientation for Rotation {
-        type Tolerance = Rotation;
-        const TOL: Rotation = Rotation::new(1);
-
-        fn assert_approx_eq(&self, other: Rotation) {
+        /// The tolerance is 1 deci-degree.
+        fn assert_approx_eq(&self, other: Self) {
             let distance = self.distance(other);
             dbg!(self);
             dbg!(other);
-            assert!(distance <= Self::TOL);
+            assert!(distance <= Rotation::new(1));
+        }
+
+        /// Which direction is the shortest to rotate towards to reach `target`?
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
+        ///
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::NORTH), RotationDirection::Clockwise);
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::EAST), RotationDirection::Clockwise);
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::WEST), RotationDirection::CounterClockwise);
+        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::SOUTH), RotationDirection::Clockwise);
+        /// ```
+        #[inline]
+        #[must_use]
+        fn rotation_direction(&self, target: Self) -> RotationDirection {
+            if self.distance(target).deci_degrees <= Rotation::FULL_CIRCLE / 2 {
+                RotationDirection::Clockwise
+            } else {
+                RotationDirection::CounterClockwise
+            }
+        }
+    }
+
+    impl Orientation for Rotation {
+        #[inline]
+        fn distance(&self, other: Rotation) -> Rotation {
+            if self.deci_degrees >= other.deci_degrees {
+                Rotation {
+                    deci_degrees: self.deci_degrees - other.deci_degrees,
+                }
+            } else {
+                Rotation {
+                    deci_degrees: other.deci_degrees - self.deci_degrees,
+                }
+            }
         }
     }
 
     impl Orientation for Direction {
-        type Tolerance = Rotation;
-        const TOL: Rotation = Rotation::new(1);
-
-        fn assert_approx_eq(&self, other: Direction) {
-            let distance = self.distance(other);
-            dbg!(self);
-            dbg!(other);
-            assert!(distance <= Self::TOL);
+        fn distance(&self, other: Direction) -> Rotation {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation = other.into();
+            self_rotation.distance(other_rotation)
         }
     }
 
     impl Orientation for Quat {
-        type Tolerance = f32;
-        const TOL: f32 = 0.01;
-
-        fn assert_approx_eq(&self, other: Quat) {
-            dbg!(self);
-            dbg!(other);
-            assert!(Quat::abs_diff_eq(*self, other, Self::TOL));
+        fn distance(&self, other: Quat) -> Rotation {
+            let self_rotation: Rotation = (*self).into();
+            let other_rotation = other.into();
+            self_rotation.distance(other_rotation)
         }
     }
 }
@@ -96,7 +119,7 @@ impl Default for RotationDirection {
 }
 
 mod rotation {
-    use super::{NearlySingularConversion, RotationDirection};
+    use super::{NearlySingularConversion, Orientation, RotationDirection};
     use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
@@ -157,43 +180,6 @@ mod rotation {
         #[must_use]
         pub const fn deci_degrees(&self) -> u16 {
             self.deci_degrees
-        }
-
-        /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
-        ///
-        /// Simply subtract the two rotations if you want a signed value instead.
-        #[inline]
-        #[must_use]
-        pub const fn distance(&self, other: Rotation) -> Rotation {
-            if self.deci_degrees >= other.deci_degrees {
-                Rotation {
-                    deci_degrees: self.deci_degrees - other.deci_degrees,
-                }
-            } else {
-                Rotation {
-                    deci_degrees: other.deci_degrees - self.deci_degrees,
-                }
-            }
-        }
-
-        /// Which direction is the shortest to rotate towards to reach `target_rotation`?
-        /// # Example
-        /// ```rust
-        /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
-        ///
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::NORTH), RotationDirection::Clockwise);
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::EAST), RotationDirection::Clockwise);
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::WEST), RotationDirection::CounterClockwise);
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::SOUTH), RotationDirection::Clockwise);
-        /// ```
-        #[inline]
-        #[must_use]
-        pub const fn rotation_direction(&self, target: Rotation) -> RotationDirection {
-            if self.distance(target).deci_degrees <= Rotation::FULL_CIRCLE / 2 {
-                RotationDirection::Clockwise
-            } else {
-                RotationDirection::CounterClockwise
-            }
         }
 
         /// Rotates `self` towards `target` by up to `max_rotation`
@@ -377,7 +363,6 @@ mod rotation {
 }
 
 mod direction {
-    use super::rotation::Rotation;
     use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
     use core::ops::{Add, Div, Mul, Neg, Sub};
@@ -437,14 +422,6 @@ mod direction {
         #[inline]
         pub const fn unit_vector(&self) -> Vec2 {
             self.unit_vector
-        }
-
-        /// Returns the absolute distance between `self` and `other` as a [`Rotation`]
-        pub fn distance(&self, other: Direction) -> Rotation {
-            let self_rotation: Rotation = (*self).into();
-            let other_rotation: Rotation = other.into();
-
-            self_rotation.distance(other_rotation)
         }
     }
 
