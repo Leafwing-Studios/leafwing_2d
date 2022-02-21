@@ -1,8 +1,6 @@
 //! 2-dimensional coordinates
 
-use crate::orientation::{
-    Direction, NearlySingularConversion, OrientationPositionInterop, Rotation,
-};
+use crate::orientation::{NearlySingularConversion, OrientationPositionInterop, Rotation};
 use bevy_ecs::prelude::Component;
 use derive_more::{
     Add, AddAssign, Display, Div, DivAssign, Error, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
@@ -123,87 +121,47 @@ where
 }
 
 impl<C: Coordinate> Position<C> {
-    /// Gets the [`Direction`] that points away from this position, towards `other_position`
+    /// Gets the [`Orientation`](crate::orientation::Orientation) that points away from this position towards `other_position`
     ///
     /// # Example
     /// ```rust
     /// use leafwing_2d::position::Position;
-    /// use leafwing_2d::orientation::Direction;
+    /// use leafwing_2d::orientation::{Rotation, Orientation};
+    ///
     ///
     /// let origin = Position::<f32>::default();
     /// let target = Position::new(0.0, 1.0);
     ///
-    /// assert_eq!(origin.direction_to(target), Ok(Direction::NORTH));
-    /// ```
-    #[inline]
-    pub fn direction_to(
-        self,
-        other_position: Position<C>,
-    ) -> Result<Direction, NearlySingularConversion> {
-        let net_position: Position<C> = other_position - self;
-        net_position.try_into()
-    }
-
-    /// Gets the [`Direction`] that points towards this position, from `other_position`
-    ///
-    /// # Example
-    /// ```rust
-    /// use leafwing_2d::position::Position;
-    /// use leafwing_2d::orientation::Direction;
-    ///
-    /// let origin = Position::<f32>::default();
-    /// let target = Position::new(0.0, 1.0);
-    ///
-    /// assert_eq!(origin.direction_from(target), Ok(Direction::SOUTH));
-    /// ```
-    #[inline]
-    pub fn direction_from(
-        self,
-        other_position: Position<C>,
-    ) -> Result<Direction, NearlySingularConversion> {
-        let net_position: Position<C> = self - other_position;
-        net_position.try_into()
-    }
-
-    /// Gets the [`Rotation`] that points away from this position, towards `other_position`
-    ///
-    /// # Example
-    /// ```rust
-    /// use leafwing_2d::position::Position;
-    /// use leafwing_2d::orientation::Rotation;
-    ///
-    /// let origin = Position::<f32>::default();
-    /// let target = Position::new(0.0, 1.0);
-    ///
-    /// assert_eq!(origin.rotation_to(target), Ok(Rotation::NORTH));
+    /// let rotation: Rotation = origin.orientation_to(target).expect("These positions are distinct.");
+    /// rotation.assert_approx_eq(Rotation::NORTH);
     /// ```
     #[inline]
     pub fn orientation_to<O: OrientationPositionInterop<C>>(
-        self,
+        &self,
         other_position: Position<C>,
     ) -> Result<O, NearlySingularConversion> {
-        O::orientation_to_position(self, other_position)
+        O::orientation_to_position(*self, other_position)
     }
 
-    /// Gets the [`Rotation`] that points towards this position, from `other_position`
+    /// Gets the [`Orientation`](crate::orientation::Orientation) that points towards from this position from `other_position`
     ///
     /// # Example
     /// ```rust
     /// use leafwing_2d::position::Position;
-    /// use leafwing_2d::orientation::Rotation;
+    /// use leafwing_2d::orientation::{Direction, Orientation};
     ///
     /// let origin = Position::<f32>::default();
-    /// let target = Position::new(0.0, -1.0);
+    /// let target = Position::new(0.0, 1.0);
     ///
-    /// assert_eq!(origin.rotation_from(target), Ok(Rotation::NORTH));
+    /// let direction: Direction = origin.orientation_from(target).expect("These positions are distinct.");
+    /// direction.assert_approx_eq(Direction::SOUTH);
     /// ```
     #[inline]
-    pub fn rotation_from(
-        self,
+    pub fn orientation_from<O: OrientationPositionInterop<C>>(
+        &self,
         other_position: Position<C>,
-    ) -> Result<Rotation, NearlySingularConversion> {
-        let net_position: Position<C> = self - other_position;
-        net_position.try_into()
+    ) -> Result<O, NearlySingularConversion> {
+        O::orientation_to_position(other_position, *self)
     }
 }
 

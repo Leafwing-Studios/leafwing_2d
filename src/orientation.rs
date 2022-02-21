@@ -32,15 +32,6 @@ mod orientation_trait {
         }
 
         /// Which direction is the shortest to rotate towards to reach `target`?
-        /// # Example
-        /// ```rust
-        /// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
-        ///
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::NORTH), RotationDirection::Clockwise);
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::EAST), RotationDirection::Clockwise);
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::WEST), RotationDirection::CounterClockwise);
-        /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::SOUTH), RotationDirection::Clockwise);
-        /// ```
         #[inline]
         #[must_use]
         fn rotation_direction(&self, target: Self) -> RotationDirection {
@@ -120,13 +111,13 @@ mod orientation_position_trait {
     pub trait OrientationPositionInterop<C: Coordinate>:
         Orientation + TryFrom<Position<C>, Error = NearlySingularConversion>
     {
-        /// Computes the orientation facing from `current_position` to `other_position`
+        /// Computes the orientation facing from `position_a` to `position_b`
         #[inline]
         fn orientation_to_position(
-            current_position: Position<C>,
-            other_position: Position<C>,
+            position_a: Position<C>,
+            position_b: Position<C>,
         ) -> Result<Self, NearlySingularConversion> {
-            let net_position: Position<C> = other_position - current_position;
+            let net_position: Position<C> = position_b - position_a;
             net_position.try_into()
         }
 
@@ -168,7 +159,7 @@ pub struct NearlySingularConversion;
 ///
 /// # Example
 /// ```rust
-/// use leafwing_2d::{position::Position, orientation::RotationDirection, orientation::Rotation};
+/// use leafwing_2d::orientation::{Orientation, Rotation, RotationDirection};
 ///
 /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::NORTH), RotationDirection::Clockwise);
 /// assert_eq!(Rotation::NORTH.rotation_direction(Rotation::EAST), RotationDirection::Clockwise);
