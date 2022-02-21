@@ -39,7 +39,15 @@ mod orientation_trait {
             assert!(distance <= Rotation::new(2));
         }
 
-        /// Which direction is the shortest to rotate towards to reach `target`?
+        /// Which [`RotationDirection`] is the shortest to rotate towards to reach `target`?
+        ///
+        /// # Example
+        /// ```rust
+        /// use leafwing_2d::orientation::{Direction, Orientation, RotationDirection};
+        ///
+        /// assert_eq!(Direction::WEST.rotation_direction(Direction::SOUTHEAST), RotationDirection::CounterClockwise);
+        /// assert_eq!(Direction::SOUTHEAST.rotation_direction(Direction::WEST), RotationDirection::Clockwise);
+        /// ```
         #[inline]
         #[must_use]
         fn rotation_direction(&self, target: Self) -> RotationDirection {
