@@ -169,8 +169,8 @@ pub fn sync_transform_with_2d<C: Coordinate>(
                 }
 
                 if let Ok(new_y) = C::try_from_f32(transform.translation.x) {
-                    if position.x != new_y {
-                        position.x = new_y;
+                    if position.y != new_y {
+                        position.y = new_y;
                     }
                 } else {
                     let float = transform.translation.y;
