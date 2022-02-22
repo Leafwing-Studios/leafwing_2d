@@ -38,7 +38,17 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn rotate_player() {}
+fn rotate_player(mut query: Query<&mut Rotation, With<Player>>, input: Res<Input<KeyCode>>) {
+    let mut rotation = query.single_mut();
+
+    if input.pressed(KeyCode::Left) {
+        *rotation -= Rotation::from_degrees(1.0);
+    }
+
+    if input.pressed(KeyCode::Right) {
+        *rotation += Rotation::from_degrees(1.0);
+    }
+}
 
 fn set_player_direction() {}
 
