@@ -6,7 +6,7 @@
 use bevy::{core::FixedTimestep, math::const_vec2, prelude::*};
 use leafwing_2d::bounding::AxisAlignedBoundingBox;
 use leafwing_2d::prelude::*;
-// This is part of the prelude of leafwing_2d, but clashes with the `bevy` version :/
+// This is part of the prelude of leafwing_2d, but clashes with the `bevy_ui` version :/
 use leafwing_2d::orientation::Direction;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
@@ -82,7 +82,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .insert(Position::<f32>::default())
-        .insert(Direction::default())
         .insert(Rotation::default())
         .insert(Player {
             movement_speed: 500.0,                  // metres per second
@@ -133,23 +132,22 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 /// Demonstrates applying rotation and movement based on keyboard input.
 fn player_movement_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Player, &mut Position<f32>, &Direction, &mut Rotation)>,
+    mut query: Query<(&Player, &mut Position<f32>, &mut Rotation)>,
 ) {
-    let (ship, mut position, &direction, mut rotation) = query.single_mut();
+    let (ship, mut position, mut rotation) = query.single_mut();
 
+    // Apply rotation before movement to ensure that we are moving in the most recent direction
     let mut rotation_factor = 0.0;
     let mut movement_factor = 0.0;
 
+    // Left rotates you counterclockwise
     if keyboard_input.pressed(KeyCode::Left) {
-        rotation_factor += 1.0;
-    }
-
-    if keyboard_input.pressed(KeyCode::Right) {
         rotation_factor -= 1.0;
     }
 
-    if keyboard_input.pressed(KeyCode::Up) {
-        movement_factor += 1.0;
+    // Right rotates you clockwise
+    if keyboard_input.pressed(KeyCode::Right) {
+        rotation_factor += 1.0;
     }
 
     // create the change in rotation around the Z axis (perpendicular to the 2D plane of the screen)
@@ -157,8 +155,16 @@ fn player_movement_system(
     // update the ship rotation with our rotation delta
     *rotation += rotation_delta;
 
+    if keyboard_input.pressed(KeyCode::Up) {
+        movement_factor += 1.0;
+    }
+
     // get the distance the ship will move based on direction, the ship's movement speed and delta time
     let movement_distance = movement_factor * ship.movement_speed * TIME_STEP;
+
+    // Determine which direction to move in based on our rotation
+    let direction: Direction = (*rotation).into();
+
     // create the change in translation using the new movement direction and distance
     let translation_delta = direction * movement_distance;
     // update the ship translation with our new translation delta
