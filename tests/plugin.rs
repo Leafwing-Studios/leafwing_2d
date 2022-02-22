@@ -115,9 +115,26 @@ fn sync_orientation() {
     app.assert_orientation_approx_eq(Rotation::NORTHEAST);
     app.assert_orientation_approx_eq(Transform::from_rotation(Direction::NORTHEAST.into()));
 
+    // Changing transform and direction (rotation wins)
+    app.set_component(Transform::from_rotation(Rotation::SOUTHEAST.into()));
+    app.set_component(Rotation::NORTH);
+    app.update();
+    app.assert_orientation_approx_eq(Direction::NORTH);
+    app.assert_orientation_approx_eq(Rotation::NORTH);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::NORTH.into()));
+
     // Changing transform and direction (direction wins)
     app.set_component(Transform::from_rotation(Rotation::SOUTHEAST.into()));
-    app.set_component(Direction::NORTH);
+    app.set_component(Direction::SOUTH);
+    app.update();
+    app.assert_orientation_approx_eq(Direction::SOUTH);
+    app.assert_orientation_approx_eq(Rotation::SOUTH);
+    app.assert_orientation_approx_eq(Transform::from_rotation(Direction::SOUTH.into()));
+
+    // Changing all three (rotation wins)
+    app.set_component(Transform::from_rotation(Rotation::SOUTHEAST.into()));
+    app.set_component(Direction::WEST);
+    app.set_component(Rotation::NORTH);
     app.update();
     app.assert_orientation_approx_eq(Direction::NORTH);
     app.assert_orientation_approx_eq(Rotation::NORTH);
