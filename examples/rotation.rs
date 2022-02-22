@@ -22,7 +22,7 @@ const BOUNDS: Vec2 = const_vec2!([1200.0, 640.0]);
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(TwoDimPlugin::<f32>::default())
+        .add_plugin(TwoDPlugin::<f32>::default())
         .add_startup_system(setup)
         .add_system_set(
             SystemSet::new()

@@ -9,12 +9,45 @@ use bevy_math::Quat;
 use bevy_transform::components::{GlobalTransform, Transform};
 use std::marker::PhantomData;
 
+/// A [`Bundle`] of components that store 2-dimensional information about position and orientation
+///
+/// Use a [`TwoDObjectBundle`] if you also need to include a [`Transform`] and [`GlobalTransform`].
+///
+/// # Example
+/// ```rust
+/// use bevy::prelude::*;
+/// use leafwing_2d::plugin::TwoDBundle;
+///
+/// #[derive(Component, Default)]
+/// struct Player;
+///
+/// #[derive(Bundle, Default)]
+/// struct PlayerBundle {
+///     player: Player,
+///     #[bundle]
+///     sprite: SpriteBundle,
+///     #[bundle]
+///     two_d: TwoDBundle<f32>,
+/// }
+/// ```
+#[derive(Bundle, Clone, Debug, Default)]
+pub struct TwoDBundle<C: Coordinate> {
+    /// The 2-dimensional [`Position`] of the entity
+    ///
+    /// This is automatically converted into a [`Transform`]'s translation
+    pub position: Position<C>,
+    /// Which way the entity is facing, stored as an angle from due north
+    pub rotation: Rotation,
+    /// Which way the entity is facing, stored as a unit vector
+    pub direction: Direction,
+}
+
 /// A [`Bundle`] of components that conveniently represents the state of entities living in 2-dimensional space
 ///
-/// When used with other bundles (like a `SpriteBundle`), be aware that duplicate components (like [`Transform`])
-/// will take the value of the last.
+/// This bundle is most useful for objects that have a 2D representation, but don't need to be drawn.
+/// Use a [`TwoDBundle`] if you want to compose this with a [`SpriteBundle`](bevy::sprite::SpriteBundle).
 #[derive(Bundle, Clone, Debug, Default)]
-pub struct TwoDimBundle<C: Coordinate> {
+pub struct TwoDObjectBundle<C: Coordinate> {
     /// The 2-dimensional [`Position`] of the entity
     ///
     /// This is automatically converted into a [`Transform`]'s translation
@@ -40,7 +73,7 @@ pub struct TwoDimBundle<C: Coordinate> {
 ///
 /// System labels are stored in [`TwoDimSystem`], which describes the working of this plugin in more depth.
 #[derive(Default, Debug)]
-pub struct TwoDimPlugin<C: Coordinate> {
+pub struct TwoDPlugin<C: Coordinate> {
     _phantom: PhantomData<C>,
 }
 
@@ -48,7 +81,7 @@ pub struct TwoDimPlugin<C: Coordinate> {
 ///
 /// These labels are executed in sequence.
 #[derive(SystemLabel, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum TwoDimSystem {
+pub enum TwoDSystem {
     /// Synchronizes the [`Direction`] and [`Rotation`] of all entities
     ///
     /// If [`Direction`] and [`Rotation`] are desynced, whichever one was changed will be used and the other will be made consistent.
@@ -60,17 +93,17 @@ pub enum TwoDimSystem {
     SyncTransform,
 }
 
-impl<C: Coordinate> Plugin for TwoDimPlugin<C> {
+impl<C: Coordinate> Plugin for TwoDPlugin<C> {
     fn build(&self, app: &mut App) {
         app.add_system_to_stage(
             CoreStage::PostUpdate,
-            sync_direction_and_rotation.label(TwoDimSystem::SyncDirectionRotation),
+            sync_direction_and_rotation.label(TwoDSystem::SyncDirectionRotation),
         )
         .add_system_to_stage(
             CoreStage::PostUpdate,
             sync_transform_with_2d::<C>
-                .label(TwoDimSystem::SyncTransform)
-                .after(TwoDimSystem::SyncDirectionRotation),
+                .label(TwoDSystem::SyncTransform)
+                .after(TwoDSystem::SyncDirectionRotation),
         );
     }
 }

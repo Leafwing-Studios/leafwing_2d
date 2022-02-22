@@ -14,7 +14,7 @@ pub mod position;
 pub mod prelude {
     pub use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion};
     pub use crate::orientation::{Direction, Orientation, OrientationPositionInterop, Rotation};
-    pub use crate::plugin::{TwoDimBundle, TwoDimPlugin};
+    pub use crate::plugin::{TwoDBundle, TwoDPlugin};
     pub use crate::position::{
         discrete_coordinates::DiscreteCoordinate, Coordinate, Position, Positionlike,
     };

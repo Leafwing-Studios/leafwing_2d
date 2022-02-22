@@ -51,7 +51,7 @@ impl AppExtension for App {
 
 fn test_app() -> App {
     let mut app = App::new();
-    app.add_plugin(TwoDimPlugin::<f32>::default());
+    app.add_plugin(TwoDPlugin::<f32>::default());
     app.add_startup_system(test_entity);
     app.add_system_to_stage(CoreStage::Last, assert_orientation_matches);
     app.add_system_to_stage(CoreStage::Last, assert_position_matches);
@@ -60,7 +60,7 @@ fn test_app() -> App {
 }
 
 fn test_entity(mut commands: Commands) {
-    commands.spawn_bundle(TwoDimBundle::<f32>::default());
+    commands.spawn_bundle(TwoDBundle::<f32>::default());
 }
 
 fn assert_orientation_matches(query: Query<(Option<&Rotation>, Option<&Direction>, &Transform)>) {
