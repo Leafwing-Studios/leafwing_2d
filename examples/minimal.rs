@@ -6,11 +6,15 @@ use leafwing_2d::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        // `f32` is our `Coordinate` unit for this example
         .add_plugin(TwoDPlugin::<f32>::default())
         .add_startup_system(setup)
+        // We can work directly with `Position`, `Direction` and `Rotation`
         .add_system(rotate_player)
-        .add_system(set_player_direction)
-        .add_system(move_player)
+        // Convenient methods for converting to-and-from screen-space are included
+        .add_system(move_towards_click)
+        // Or, we can use the included kinematics to work in terms of velocity and acceleration
+        .add_system(accelerate_player)
         .run();
 }
 
@@ -50,6 +54,6 @@ fn rotate_player(mut query: Query<&mut Rotation, With<Player>>, input: Res<Input
     }
 }
 
-fn set_player_direction() {}
+fn move_towards_click() {}
 
-fn move_player() {}
+fn accelerate_player() {}
