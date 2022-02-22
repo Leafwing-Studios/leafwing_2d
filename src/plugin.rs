@@ -33,7 +33,10 @@ pub struct TwoDimBundle<C: Coordinate> {
 
 /// Ensures that two-dimensional [`Position`], [`Direction`] and [`Rotation`] components are synchronized with the [`Transform`] equivalent
 ///
-/// The type paramter `C` is the coordinate type used in [`Position`]
+/// The type paramter `C` is the coordinate type used in [`Position`].
+/// [`Transform`] can be modified directly, but if both the [`Transform`]
+/// and its 2D analogue have been changed, the 2D version will take priority.
+/// Similary, [`Rotation`] takes priority over [`Direction`].
 ///
 /// System labels are stored in [`TwoDimSystem`], which describes the working of this plugin in more depth.
 #[derive(Default, Debug)]
@@ -98,9 +101,8 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
 
 /// Synchronizes the [`Rotation`], [`Direction`] and [`Position`] of each entity with its [`Transform`] and vice versa
 ///
-/// The [`Rotation`] and [`Direction`] will be synchronized, with whichever one has been changed taking priority.
-/// If both have been changed, [`Rotation`] will take priority.
-/// If both the [`Transform`] and its 2D analogue have been changed, the 2D version will take priority.
+/// [`Transform`] can be modified directly, but if both the [`Transform`]
+/// and its 2D analogue have been changed, the 2D version will take priority.
 ///
 /// z-values of the [`Transform`] translation will not be modified.
 /// Any off-axis rotation of the [`Transform`]'s rotation quaternion will be lost.
