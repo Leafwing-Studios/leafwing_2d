@@ -522,7 +522,12 @@ mod rotation {
 
     impl SubAssign for Rotation {
         fn sub_assign(&mut self, rhs: Self) {
-            self.deci_degrees = (self.deci_degrees - rhs.deci_degrees) % Rotation::FULL_CIRCLE;
+            // Be sure to avoid overflow when subtracting
+            if self.deci_degrees > rhs.deci_degrees {
+                self.deci_degrees = self.deci_degrees - rhs.deci_degrees;
+            } else {
+                self.deci_degrees = Rotation::FULL_CIRCLE - (rhs.deci_degrees - self.deci_degrees);
+            }
         }
     }
 
