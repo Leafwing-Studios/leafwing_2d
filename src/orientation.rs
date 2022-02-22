@@ -803,7 +803,8 @@ mod conversions {
 
     impl From<Rotation> for Quat {
         fn from(rotation: Rotation) -> Self {
-            Quat::from_rotation_z(rotation.into_radians())
+            // This is required to ensure the direction matches
+            Quat::from_rotation_z(-rotation.into_radians())
         }
     }
 
