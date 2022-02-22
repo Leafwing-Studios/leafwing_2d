@@ -490,8 +490,8 @@ mod positionlike {
             let other_vec2: Vec2 = other.into_vec2();
 
             let distance = self_vec2.distance(other_vec2);
-            dbg!(self);
-            dbg!(other);
+            dbg!(self_vec2);
+            dbg!(other_vec2);
             assert!(distance <= 0.1);
         }
     }

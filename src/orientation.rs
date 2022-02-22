@@ -39,8 +39,8 @@ mod orientation_trait {
             let other_rotation: Rotation = other.into();
 
             let distance: Rotation = self_rotation.distance(other_rotation);
-            dbg!(self);
-            dbg!(other);
+            dbg!(self_rotation);
+            dbg!(other_rotation);
             assert!(distance <= Rotation::new(2));
         }
 
