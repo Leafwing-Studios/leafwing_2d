@@ -77,6 +77,29 @@ pub struct TwoDObjectBundle<C: Coordinate> {
 /// Similary, [`Rotation`] takes priority over [`Direction`].
 ///
 /// System labels are stored in [`TwoDSystem`], which describes the working of this plugin in more depth.
+///
+/// # Example
+///
+/// ```rust
+/// use bevy::prelude::*;
+/// use leafwing_2d::prelude::*;
+/// use leafwing_2d::plugin::GameState;
+/// use leafwing_2d::discrete::FlatHex;
+/// use core::marker::PhantomData;
+///
+/// // This is a sensible starting point for a grid-based game
+/// let app = App::new()
+///     .add_state(GameState::Playing)
+///     .add_plugin(TwoDPlugin {
+///       kinematics: false,
+///       kinematics_state: None,
+///       stage: CoreStage::PostUpdate,
+///       // Hexagons are the bestagons
+///       coordinate_type: PhantomData::<FlatHex>::default(),
+///      });
+///
+/// app.update();
+/// ```
 #[derive(Debug)]
 pub struct TwoDPlugin<
     C: Coordinate,

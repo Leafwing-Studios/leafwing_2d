@@ -6,7 +6,7 @@
 #![feature(generic_const_exprs)]
 
 pub mod bounding;
-pub mod discrete_coordinates;
+pub mod discrete;
 pub mod errors;
 pub mod kinematics;
 pub mod orientation;
@@ -17,7 +17,7 @@ pub mod position;
 /// The most commonly useful bits of the library
 pub mod prelude {
     pub use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion};
-    pub use crate::discrete_coordinates::DiscreteCoordinate;
+    pub use crate::discrete::DiscreteCoordinate;
     pub use crate::kinematics::{
         Acceleration, AngularAcceleration, AngularVelocity, Kinematic, Velocity,
     };

@@ -30,8 +30,8 @@ WARNING: this crate is currently nightly-only, as it relies on `#![feature(gener
 2. Pick a coordinate type `C`.
    1. Any of the built-in float (e.g. `f32`) or integer (e.g. `u8` or `i64`) types work.
    2. Or try out our `DiscreteCoordinate` types like `OrthogonalGrid`)!
-3. Add the `TwoDimBundle` bundle to your entities, or toss on a `Position`, `Direction` or `Rotation` component.
-4. Add `TwoDimPlugin` to your `App` to synchronize these easy-to-work with 2D geometry types with Bevy's `Transform`.
+3. Add the `TwoDBundle` bundle to your entities, or toss on a `Position`, `Direction` or `Rotation` component.
+4. Add `TwoDPlugin` to your `App` to synchronize these easy-to-work with 2D geometry types with Bevy's `Transform`.
 
 ### Running examples
 
