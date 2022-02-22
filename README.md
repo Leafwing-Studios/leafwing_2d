@@ -1,13 +1,24 @@
 # About
 
 Baffled by quaternions?
-Tired of writing `struct Position(x,y);` boilerplate?
+Want to accelerate an object in 2D?
 Wish that there was a simple way to work with grids?
 Just want to know if two axis-aligned bounding boxes intersect?
 
 Try out `leafwing_2d` for a simple, well-tested, and fully integrated solution to these problems!
 
-Like always, made with Leafwing Studios' trademark `#![forbid(missing_docs)]`.
+Features:
+
+- Flexible `Position<C: Coordinate>` type for working with 2D coordinates
+  - Use the `DiscreteCoordinate` trait for important grid-based tasks like finding neighbours
+- Say goodbye to quaternions: use the `Direction` (unit vector) and `Rotation` (angle from midnight) types instead!
+  - Jam-packed with powerful, tested convenience methods like `Orientation::orientation_to` and `Rotation::towards`
+  - Slice and dice the unit circle into cardinal, hexagonal or octagonal directions with the `DirectionPartitioning` trait
+- Use `TwoDPlugin` to automatically synchronize your `Transforms` with `Position`, `Direction` and `Rotation`, but modify whichever one you'd like
+- Accelerate your game creation with `Velocity<C>`, `Acceleration<C>` and their angular analogues
+- Perform basic collision checks using the `AxisAlignedBoundingBox` type.
+- Convert to and from screen space in whatever coordinate system you want using the `Positionlike` trait
+- Made with Leafwing Studios' trademark `#![forbid(missing_docs)]`
 
 WARNING: this crate is currently nightly-only, as it relies on `#![feature(generic_const_exprs)]` to provide an efficient generic API to fetch cell neighbours.
 
