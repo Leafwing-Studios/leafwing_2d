@@ -53,8 +53,8 @@ fn test_app() -> App {
     let mut app = App::new();
     app.add_plugin(TwoDimPlugin::<f32>::default());
     app.add_startup_system(test_entity);
-    //app.add_system_to_stage(CoreStage::Last, assert_orientation_matches);
-    //app.add_system_to_stage(CoreStage::Last, assert_position_matches);
+    app.add_system_to_stage(CoreStage::Last, assert_orientation_matches);
+    app.add_system_to_stage(CoreStage::Last, assert_position_matches);
 
     app
 }
@@ -153,5 +153,5 @@ fn sync_position() {
     app.set_component(Position::new(4.0, 4.0));
 
     app.update();
-    app.assert_positionlike_approx_eq(Transform::from_xyz(3.0, 3.0, 5.0));
+    app.assert_positionlike_approx_eq(Transform::from_xyz(4.0, 4.0, 5.0));
 }
