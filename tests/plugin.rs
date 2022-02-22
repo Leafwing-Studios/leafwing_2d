@@ -51,7 +51,7 @@ impl AppExtension for App {
 
 fn test_app() -> App {
     let mut app = App::new();
-    app.add_plugin(TwoDPlugin::<f32>::default());
+    app.add_plugin(TwoDPlugin::default());
     app.add_startup_system(test_entity);
     app.add_system_to_stage(CoreStage::Last, assert_orientation_matches);
     app.add_system_to_stage(CoreStage::Last, assert_position_matches);

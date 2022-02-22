@@ -5,10 +5,14 @@ use crate::orientation::{Direction, Rotation};
 use crate::position::{Coordinate, Position};
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
+use bevy_ecs::schedule::ShouldRun;
+use bevy_ecs::system::Resource;
 use bevy_log::warn;
 use bevy_math::Quat;
 use bevy_transform::components::{GlobalTransform, Transform};
-use std::marker::PhantomData;
+use core::fmt::Debug;
+use core::hash::Hash;
+use core::marker::PhantomData;
 
 /// A [`Bundle`] of components that store 2-dimensional information about position and orientation
 ///
@@ -72,42 +76,122 @@ pub struct TwoDObjectBundle<C: Coordinate> {
 /// and its 2D analogue have been changed, the 2D version will take priority.
 /// Similary, [`Rotation`] takes priority over [`Direction`].
 ///
-/// System labels are stored in [`TwoDimSystem`], which describes the working of this plugin in more depth.
-#[derive(Default, Debug)]
-pub struct TwoDPlugin<C: Coordinate> {
-    _phantom: PhantomData<C>,
+/// System labels are stored in [`TwoDSystem`], which describes the working of this plugin in more depth.
+#[derive(Debug)]
+pub struct TwoDPlugin<
+    C: Coordinate,
+    UserState: Resource + Eq + Debug + Clone + Hash,
+    UserStage: StageLabel,
+> {
+    /// Should [`TwoDSystem::Kinematics] systems be enabled?
+    ///
+    /// Default: [`true`](bool)
+    pub kinematics: bool,
+    /// Kinematics are only computed during the provided state
+    ///
+    /// If `None`, kinematics are always run
+    ///
+    /// Default: [`None`]
+    pub kinematics_state: Option<UserState>,
+    /// Which stage should these systems run in?
+    ///
+    /// Default: [`CoreStage::PostUpdate`]
+    pub stage: UserStage,
+    /// What [`Coordinate`] should be used?
+    ///
+    /// Default: [`f32`]
+    pub coordinate_type: PhantomData<C>,
 }
 
-/// [`SystemLabel`] for [`TwoDimPlugin`]
+impl Default for TwoDPlugin<f32, GameState, CoreStage> {
+    fn default() -> Self {
+        Self {
+            kinematics: true,
+            kinematics_state: None,
+            stage: CoreStage::PostUpdate,
+            coordinate_type: PhantomData::<f32>::default(),
+        }
+    }
+}
+
+/// Is the game paused?
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
+pub enum GameState {
+    /// The game is not paused
+    Playing,
+    /// The game is paused
+    Paused,
+}
+
+/// [`SystemLabel`] for [`TwoDPlugin`]
 ///
 /// These labels are executed in sequence.
 #[derive(SystemLabel, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum TwoDSystem {
+    /// Applies acceleration and velocity
+    ///
+    /// Contains [`linear_kinematics::<C>`] and [`angular_kinematics`].
+    /// Disable these by setting the `kinematics` field of [`TwoDPlugin`].
+    Kinematics,
     /// Synchronizes the [`Direction`] and [`Rotation`] of all entities
     ///
     /// If [`Direction`] and [`Rotation`] are desynced, whichever one was changed will be used and the other will be made consistent.
     /// If both were changed, [`Rotation`] will be prioritized
+    ///
+    /// Contains [`sync_direction_and_rotation`].
     SyncDirectionRotation,
     /// Synchronizes the [`Rotation`] and [`Position`] of each entity with its [`Transform`]
     ///
     /// Not all components are needed for this system to do its work.
+    ///
+    /// Contains [`sync_transform_with_2d`].
     SyncTransform,
 }
 
-impl<C: Coordinate> Plugin for TwoDPlugin<C> {
+impl<
+        C: Coordinate,
+        UserState: Resource + Eq + Debug + Clone + Hash,
+        UserStage: StageLabel + Clone,
+    > Plugin for TwoDPlugin<C, UserState, UserStage>
+{
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(
-            CoreStage::PostUpdate,
-            sync_direction_and_rotation.label(TwoDSystem::SyncDirectionRotation),
-        )
-        .add_system_to_stage(
-            CoreStage::PostUpdate,
-            sync_transform_with_2d::<C>
-                .label(TwoDSystem::SyncTransform)
-                .after(TwoDSystem::SyncDirectionRotation),
-        )
-        .add_system_to_stage(CoreStage::PostUpdate, linear_kinematics::<C>)
-        .add_system_to_stage(CoreStage::PostUpdate, angular_kinematics);
+        if self.kinematics {
+            let kinematics_systems = SystemSet::new()
+                .with_system(linear_kinematics::<C>)
+                .with_system(angular_kinematics)
+                .label(TwoDSystem::Kinematics)
+                .before(TwoDSystem::SyncDirectionRotation);
+
+            // If a state has been provided
+            // Only run this plugin's systems in the state variant provided
+            // Note that this does not perform the standard looping behavior
+            // as otherwise we would be limited to the stage that state was added in T_T
+            if let Some(desired_state_variant) = self.kinematics_state.clone() {
+                // https://github.com/bevyengine/rfcs/pull/45 will make special-casing state support unnecessary
+
+                // Captured the state variant we want our systems to run in in a run-criteria closure
+                // The `SystemSet` methods take self by ownership, so we must store a new system set
+                let kinematics_systems = kinematics_systems.with_run_criteria(
+                    move |current_state: Res<State<UserState>>| {
+                        if *current_state.current() == desired_state_variant {
+                            ShouldRun::Yes
+                        } else {
+                            ShouldRun::No
+                        }
+                    },
+                );
+
+                app.add_system_set_to_stage(self.stage.clone(), kinematics_systems);
+            } else {
+                app.add_system_set_to_stage(self.stage.clone(), kinematics_systems);
+            }
+        }
+
+        let sync_systems = SystemSet::new()
+            .with_system(sync_direction_and_rotation.label(TwoDSystem::SyncDirectionRotation))
+            .with_system(sync_transform_with_2d::<C>.label(TwoDSystem::SyncTransform));
+
+        app.add_system_set_to_stage(self.stage.clone(), sync_systems);
     }
 }
 

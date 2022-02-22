@@ -7,7 +7,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         // `f32` is our `Coordinate` unit for this example
-        .add_plugin(TwoDPlugin::<f32>::default())
+        .add_plugin(TwoDPlugin::default())
         .add_startup_system(setup)
         // We can work directly with `Position`, `Direction` and `Rotation`
         .add_system(rotate_player)
