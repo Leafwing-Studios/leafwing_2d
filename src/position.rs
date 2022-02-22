@@ -477,7 +477,7 @@ mod positionlike {
     use core::fmt::Debug;
 
     /// A type that can be treated like a 2D (x,y) [`Position`]
-    pub trait Positionlike: Sized + Copy + Debug {
+    pub trait Positionlike: Sized + Copy + Debug + 'static {
         /// Converts this type into a [Vec2]
         fn into_vec2(self) -> Vec2;
 
@@ -485,14 +485,15 @@ mod positionlike {
         ///
         /// # Panics
         /// Panics if the distance between `self` and `other` is greater than 0.1.
-        fn assert_approx_eq(&self, other: impl Positionlike) {
+        fn assert_approx_eq(self, other: impl Positionlike) {
             let self_vec2: Vec2 = self.into_vec2();
             let other_vec2: Vec2 = other.into_vec2();
 
             let distance = self_vec2.distance(other_vec2);
-            dbg!(self_vec2);
-            dbg!(other_vec2);
-            assert!(distance <= 0.1);
+            assert!(
+                distance <= 0.1,
+                "{self:?} (converted to {self_vec2}) was {distance} away from {other:?} (converted to {other_vec2})."
+            );
         }
     }
 

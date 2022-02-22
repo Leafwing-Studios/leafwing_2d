@@ -76,8 +76,8 @@ fn assert_orientation_matches(query: Query<(Option<&Rotation>, Option<&Direction
 }
 
 fn assert_position_matches(query: Query<(&Position<f32>, &Transform)>) {
-    for (&position, transform) in query.iter() {
-        Positionlike::assert_approx_eq(transform, position);
+    for (&position, &transform) in query.iter() {
+        transform.translation.assert_approx_eq(position);
     }
 }
 

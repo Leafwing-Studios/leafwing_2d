@@ -34,14 +34,15 @@ mod orientation_trait {
         ///
         /// # Panics
         /// Panics if the distance between `self` and `other` is greater than 2 deci-degrees.
-        fn assert_approx_eq(&self, other: impl Orientation) {
-            let self_rotation: Rotation = (*self).into();
+        fn assert_approx_eq(self, other: impl Orientation) {
+            let self_rotation: Rotation = self.into();
             let other_rotation: Rotation = other.into();
 
             let distance: Rotation = self_rotation.distance(other_rotation);
-            dbg!(self_rotation);
-            dbg!(other_rotation);
-            assert!(distance <= Rotation::new(2));
+            assert!(
+                distance <= Rotation::new(2),
+                "{self:?} (converted to {self_rotation}) was {distance} away from {other:?} (converted to {other_rotation})."
+            );
         }
 
         /// Computes the [`Orientation`] that must be applied to `self` so that it matches `target`
@@ -338,6 +339,7 @@ mod rotation {
     use bevy_ecs::prelude::Component;
     use bevy_math::Vec2;
     use core::ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign};
+    use derive_more::Display;
 
     /// A discretized 2-dimensional rotation
     ///
@@ -366,7 +368,7 @@ mod rotation {
     ///
     /// Direction::from(nine_o_clock).assert_approx_eq(Direction::WEST);
     /// ```
-    #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default)]
+    #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Default, Display)]
     pub struct Rotation {
         /// Tenths of a degree, measured clockwise from midnight (x=0, y=1)
         ///
@@ -566,6 +568,7 @@ mod direction {
     use bevy_ecs::prelude::Component;
     use bevy_math::{const_vec2, Vec2, Vec3};
     use core::ops::{Add, Div, Mul, Neg, Sub};
+    use derive_more::Display;
     use std::f32::consts::SQRT_2;
 
     /// A 2D unit vector that represents a direction
@@ -583,7 +586,7 @@ mod direction {
     /// assert_eq!(Direction::SOUTH * 3.0, Vec2::new(0.0, -3.0));
     /// assert_eq!(Direction::EAST / 2.0, Vec2::new(0.5, 0.0));
     /// ```
-    #[derive(Component, Clone, Copy, Debug, PartialEq)]
+    #[derive(Component, Clone, Copy, Debug, PartialEq, Display)]
     pub struct Direction {
         pub(crate) unit_vector: Vec2,
     }
