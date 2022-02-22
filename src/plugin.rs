@@ -120,7 +120,6 @@ pub fn sync_transform_with_2d<C: Coordinate>(
         if let Some(mut rotation) = maybe_rotation {
             if rotation.is_changed() {
                 let new_quat: Quat = (*rotation).into();
-
                 if transform.rotation != new_quat {
                     transform.rotation = new_quat;
                 }
@@ -136,10 +135,9 @@ pub fn sync_transform_with_2d<C: Coordinate>(
         // Synchronize Direction with Transform
         if let Some(mut direction) = maybe_direction {
             if direction.is_changed() {
-                if let Ok(new_quat) = (*direction).try_into() {
-                    if transform.rotation != new_quat {
-                        transform.rotation = new_quat;
-                    }
+                let new_quat = (*direction).into();
+                if transform.rotation != new_quat {
+                    transform.rotation = new_quat;
                 }
             } else if transform.is_changed() && *direction != transform.rotation.into() {
                 *direction = transform.rotation.into();
