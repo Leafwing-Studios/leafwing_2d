@@ -1,5 +1,6 @@
 //! Tools for using two-dimensional coordinates within `bevy` games
 
+use crate::kinematics::systems::{angular_kinematics, linear_kinematics};
 use crate::orientation::{Direction, Rotation};
 use crate::position::{Coordinate, Position};
 use bevy_app::prelude::*;
@@ -104,7 +105,9 @@ impl<C: Coordinate> Plugin for TwoDPlugin<C> {
             sync_transform_with_2d::<C>
                 .label(TwoDSystem::SyncTransform)
                 .after(TwoDSystem::SyncDirectionRotation),
-        );
+        )
+        .add_system_to_stage(CoreStage::PostUpdate, linear_kinematics::<C>)
+        .add_system_to_stage(CoreStage::PostUpdate, angular_kinematics);
     }
 }
 

@@ -307,7 +307,21 @@ mod rotation_direction {
     }
 
     impl RotationDirection {
+        /// The sign of the corresponding [`Rotation`](super::Rotation)
+        ///
+        /// Returns 1 if [`RotationDirection::Clockwise`],
+        /// or -1 if [`RotationDirection::CounterClockwise`]
+        #[inline]
+        #[must_use]
+        pub fn sign(self) -> isize {
+            match self {
+                RotationDirection::Clockwise => 1,
+                RotationDirection::CounterClockwise => -1,
+            }
+        }
+
         /// Reverese the direction into the opposite enum variant
+        #[inline]
         pub fn reverse(self) -> RotationDirection {
             use RotationDirection::*;
 
