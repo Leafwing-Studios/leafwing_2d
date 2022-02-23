@@ -1,6 +1,7 @@
 //! Tools for using two-dimensional coordinates within `bevy` games
 
 use crate::kinematics::systems::{angular_kinematics, linear_kinematics};
+use crate::kinematics::{Acceleration, AngularAcceleration, AngularVelocity, Velocity};
 use crate::orientation::{Direction, Rotation};
 use crate::position::{Coordinate, Position};
 use bevy_app::prelude::*;
@@ -9,7 +10,7 @@ use bevy_ecs::schedule::ShouldRun;
 use bevy_ecs::system::Resource;
 use bevy_log::warn;
 use bevy_math::Quat;
-use bevy_transform::components::{GlobalTransform, Transform};
+use bevy_transform::components::Transform;
 use core::fmt::Debug;
 use core::hash::Hash;
 use core::marker::PhantomData;
@@ -41,32 +42,18 @@ pub struct TwoDBundle<C: Coordinate> {
     ///
     /// This is automatically converted into a [`Transform`]'s translation
     pub position: Position<C>,
+    /// The rate of movement in `C` per second
+    pub velocity: Velocity<C>,
+    /// The rate at which velocity changes in `C` per second per second
+    pub acceleration: Acceleration<C>,
     /// Which way the entity is facing, stored as an angle from due north
     pub rotation: Rotation,
     /// Which way the entity is facing, stored as a unit vector
     pub direction: Direction,
-}
-
-/// A [`Bundle`] of components that conveniently represents the state of entities living in 2-dimensional space
-///
-/// This bundle is most useful for objects that have a 2D representation, but don't need to be drawn.
-/// Use a [`TwoDBundle`] if you want to compose this with a [`SpriteBundle`](bevy::sprite::SpriteBundle).
-#[derive(Bundle, Clone, Debug, Default)]
-pub struct TwoDObjectBundle<C: Coordinate> {
-    /// The 2-dimensional [`Position`] of the entity
-    ///
-    /// This is automatically converted into a [`Transform`]'s translation
-    pub position: Position<C>,
-    /// Which way the entity is facing, stored as an angle from due north
-    pub rotation: Rotation,
-    /// Which way the entity is facing, stored as a unit vector
-    pub direction: Direction,
-    /// The local 3-dimensional position / rotation / scale of this entity
-    pub transform: Transform,
-    /// The absolute position / rotation / scale of this entity
-    ///
-    /// Can be modified by the entity's parent
-    pub global_transform: GlobalTransform,
+    /// The rate of rotation in deci-degrees per second
+    pub angular_velocity: AngularVelocity,
+    /// The rate at which angular velocity changes in deci-degrees per second per second
+    pub angular_acceleration: AngularAcceleration,
 }
 
 /// Ensures that two-dimensional [`Position`], [`Direction`] and [`Rotation`] components are synchronized with the [`Transform`] equivalent

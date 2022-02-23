@@ -2,6 +2,8 @@
 
 use bevy::prelude::*;
 use leafwing_2d::prelude::*;
+// On 0.6, there is a namespace clash with `bevy_ui::FlexDirection`
+use leafwing_2d::orientation::Direction;
 
 fn main() {
     App::new()
@@ -46,14 +48,23 @@ fn rotate_player(mut query: Query<&mut Rotation, With<Player>>, input: Res<Input
     let mut rotation = query.single_mut();
 
     if input.pressed(KeyCode::Left) {
-        *rotation -= Rotation::from_degrees(1.0);
+        *rotation -= Rotation::from_degrees(5.0);
     }
 
     if input.pressed(KeyCode::Right) {
-        *rotation += Rotation::from_degrees(1.0);
+        *rotation += Rotation::from_degrees(5.0);
     }
 }
 
 fn move_towards_click() {}
 
-fn accelerate_player() {}
+fn accelerate_player(
+    mut query: Query<(&Direction, &mut Velocity<f32>), With<Player>>,
+    input: Res<Input<KeyCode>>,
+) {
+    let (&direction, mut velocity) = query.single_mut();
+
+    if input.pressed(KeyCode::Up) {
+        *velocity += Velocity::new(10., direction);
+    }
+}

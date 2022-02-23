@@ -9,7 +9,7 @@ pub use kinematic_trait::Kinematic;
 /// The rate of change of [`Position<C>`]
 ///
 /// When used with [`linear_kinematics`](systems::linear_kinematics), the units are `C` per second
-#[derive(Component, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
+#[derive(Component, Default, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
 pub struct Velocity<C: Coordinate> {
     /// Velocity along the x-axis of a [`Position<C>`]
     pub x: C,
@@ -20,7 +20,7 @@ pub struct Velocity<C: Coordinate> {
 /// The rate of change of [`Velocity<C>`]
 ///
 /// When used with [`linear_kinematics`](systems::linear_kinematics), the units are `C` per second per second
-#[derive(Component, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
+#[derive(Component, Default, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
 pub struct Acceleration<C: Coordinate> {
     /// Acceleration along the x-axis of a [`Position<C>`]
     pub x: C,
@@ -31,7 +31,7 @@ pub struct Acceleration<C: Coordinate> {
 /// The rate of change of [`Rotation`]
 ///
 /// When used with [`angular_kinematics`](systems::angular_kinematics), the units are tenth of a degree per second
-#[derive(Component, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
+#[derive(Component, Default, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
 pub struct AngularVelocity {
     /// Tenth of a degree
     ///
@@ -43,7 +43,7 @@ pub struct AngularVelocity {
 /// The rate of change of [`AngularVelocity`]
 ///
 /// When used with [`angular_kinematics`](systems::angular_kinematics), the units are tenth of a degree per second per second
-#[derive(Component, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
+#[derive(Component, Default, Clone, Copy, Debug, PartialEq, Add, Sub, AddAssign, SubAssign)]
 pub struct AngularAcceleration {
     /// Tenth of a degree
     ///
