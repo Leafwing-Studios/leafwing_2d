@@ -94,9 +94,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: enemy_a_handle.clone(),
             ..Default::default()
         })
-        .insert(Position::<f32>::default())
+        .insert(Position::<f32>::new(-horizontal_margin, 0.0))
         .insert(Rotation::default())
         .insert(SnapToPlayer);
+
     commands
         .spawn_bundle(SpriteBundle {
             texture: enemy_a_handle,
