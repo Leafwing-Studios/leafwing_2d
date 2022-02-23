@@ -803,16 +803,14 @@ mod conversions {
 
     impl From<Rotation> for Quat {
         fn from(rotation: Rotation) -> Self {
-            Quat::from_rotation_z(rotation.into_radians())
+            // This is needed to ensure the rotation direction is correct
+            Quat::from_rotation_z(-rotation.into_radians())
         }
     }
 
     impl From<Quat> for Direction {
         fn from(quaternion: Quat) -> Self {
-            // +Y is the default direction, we need to rotate it by the quaternion
-            // in order to receive the new direction
-            // We must use the inverse quaternion to ensure that the rotation is applied in the correct direction.
-            let vec2 = quaternion.inverse().mul_vec3(Vec3::Y).truncate();
+            let vec2 = quaternion.mul_vec3(Vec3::Y).truncate();
 
             if vec2 == Vec2::ZERO {
                 Direction::default()
