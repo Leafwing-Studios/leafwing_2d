@@ -87,6 +87,25 @@ fn quat_to_rotation() {
 }
 
 #[test]
+fn round_trip_matches() {
+    round_trip(Direction::NORTH);
+    round_trip(Direction::EAST);
+    round_trip(Direction::SOUTH);
+    round_trip(Direction::WEST);
+
+    round_trip(Rotation::NORTH);
+    round_trip(Rotation::EAST);
+    round_trip(Rotation::SOUTH);
+    round_trip(Rotation::WEST);
+}
+
+fn round_trip<O: Orientation + Into<Quat> + From<Quat>>(input: O) {
+    let quat: Quat = input.into();
+    let output: O = quat.into();
+    input.assert_approx_eq(output);
+}
+
+#[test]
 fn direction_rotation_conversion() {
     Direction::NORTH.assert_approx_eq(Direction::from(Rotation::new(0)));
     Direction::NORTHEAST.assert_approx_eq(Direction::from(Rotation::new(450)));
