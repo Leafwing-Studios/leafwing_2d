@@ -87,15 +87,15 @@ mod kinematic_trait {
 
         fn new(magnitude: C, direction: Direction) -> Self {
             let magnitude: f32 = magnitude.into();
-            let x = C::try_from_f32(magnitude * direction.unit_vector().x).unwrap();
-            let y = C::try_from_f32(magnitude * direction.unit_vector().y).unwrap();
+            let x = C::from(magnitude * direction.unit_vector().x);
+            let y = C::from(magnitude * direction.unit_vector().y);
 
             Velocity { x, y }
         }
 
         fn magnitude(&self) -> C {
             let sum_of_squares: f32 = (self.x * self.x + self.y * self.y).into();
-            C::try_from_f32(sum_of_squares.sqrt()).unwrap()
+            C::from(sum_of_squares.sqrt())
         }
 
         fn magnitude_squared(&self) -> C {
@@ -117,15 +117,15 @@ mod kinematic_trait {
 
         fn new(magnitude: C, direction: Direction) -> Self {
             let magnitude: f32 = magnitude.into();
-            let x = C::try_from_f32(magnitude * direction.unit_vector().x).unwrap();
-            let y = C::try_from_f32(magnitude * direction.unit_vector().y).unwrap();
+            let x = C::from(magnitude * direction.unit_vector().x);
+            let y = C::from(magnitude * direction.unit_vector().y);
 
             Acceleration { x, y }
         }
 
         fn magnitude(&self) -> C {
             let sum_of_squares: f32 = (self.x * self.x + self.y * self.y).into();
-            C::try_from_f32(sum_of_squares.sqrt()).unwrap()
+            C::from(sum_of_squares.sqrt())
         }
 
         fn magnitude_squared(&self) -> C {
@@ -247,7 +247,7 @@ mod mul_f32 {
         type Output = Velocity<C>;
 
         fn mul(self, rhs: f32) -> Self::Output {
-            let scale = C::try_from_f32(rhs).unwrap();
+            let scale = C::from(rhs);
 
             Velocity {
                 x: self.x * scale,
@@ -260,7 +260,7 @@ mod mul_f32 {
         type Output = Velocity<C>;
 
         fn mul(self, rhs: Velocity<C>) -> Self::Output {
-            let scale = C::try_from_f32(self).unwrap();
+            let scale = C::from(self);
 
             Velocity {
                 x: rhs.x * scale,
@@ -273,7 +273,7 @@ mod mul_f32 {
         type Output = Acceleration<C>;
 
         fn mul(self, rhs: f32) -> Acceleration<C> {
-            let scale = C::try_from_f32(rhs).unwrap();
+            let scale = C::from(rhs);
 
             Acceleration {
                 x: self.x * scale,
@@ -286,7 +286,7 @@ mod mul_f32 {
         type Output = Acceleration<C>;
 
         fn mul(self, rhs: Acceleration<C>) -> Acceleration<C> {
-            let scale = C::try_from_f32(self).unwrap();
+            let scale = C::from(self);
 
             Acceleration {
                 x: rhs.x * scale,
@@ -355,7 +355,7 @@ mod mul_duration {
         type Output = Position<C>;
 
         fn mul(self, rhs: Duration) -> Position<C> {
-            let scale = C::try_from_f32(rhs.as_secs_f32()).unwrap();
+            let scale = C::from(rhs.as_secs_f32());
 
             Position {
                 x: self.x * scale,
@@ -368,7 +368,7 @@ mod mul_duration {
         type Output = Position<C>;
 
         fn mul(self, rhs: Velocity<C>) -> Position<C> {
-            let scale = C::try_from_f32(self.as_secs_f32()).unwrap();
+            let scale = C::from(self.as_secs_f32());
 
             Position {
                 x: rhs.x * scale,
@@ -381,7 +381,7 @@ mod mul_duration {
         type Output = Velocity<C>;
 
         fn mul(self, rhs: Duration) -> Velocity<C> {
-            let scale = C::try_from_f32(rhs.as_secs_f32()).unwrap();
+            let scale = C::from(rhs.as_secs_f32());
 
             Velocity {
                 x: self.x * scale,
@@ -394,7 +394,7 @@ mod mul_duration {
         type Output = Velocity<C>;
 
         fn mul(self, rhs: Acceleration<C>) -> Velocity<C> {
-            let scale = C::try_from_f32(self.as_secs_f32()).unwrap();
+            let scale = C::from(self.as_secs_f32());
 
             Velocity {
                 x: rhs.x * scale,

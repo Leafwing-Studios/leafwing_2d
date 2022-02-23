@@ -9,7 +9,6 @@ use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_ecs::schedule::ShouldRun;
 use bevy_ecs::system::Resource;
-use bevy_log::warn;
 use bevy_math::Quat;
 use bevy_transform::components::Transform;
 use core::fmt::Debug;
@@ -114,6 +113,7 @@ pub struct TwoDPlugin<
     pub coordinate_type: PhantomData<C>,
 }
 
+/*
 impl Default for TwoDPlugin<F32, GameState, CoreStage> {
     fn default() -> Self {
         Self {
@@ -124,6 +124,7 @@ impl Default for TwoDPlugin<F32, GameState, CoreStage> {
         }
     }
 }
+*/
 
 /// Is the game paused?
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -288,22 +289,14 @@ pub fn sync_transform_with_2d<C: Coordinate>(
                     transform.translation.y = new_y;
                 }
             } else if transform.is_changed() {
-                if let Ok(new_x) = C::try_from_f32(transform.translation.x) {
-                    if position.x != new_x {
-                        position.x = new_x;
-                    }
-                } else {
-                    let float = transform.translation.x;
-                    warn!("Conversion from f32 {float} into `C` failed.");
+                let new_x = C::from(transform.translation.x);
+                if position.x != new_x {
+                    position.x = new_x;
                 }
 
-                if let Ok(new_y) = C::try_from_f32(transform.translation.x) {
-                    if position.y != new_y {
-                        position.y = new_y;
-                    }
-                } else {
-                    let float = transform.translation.y;
-                    warn!("Conversion from f32 {float} into `C` failed.");
+                let new_y = C::from(transform.translation.y);
+                if position.y != new_y {
+                    position.y = new_y;
                 }
             }
         }

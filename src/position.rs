@@ -102,18 +102,27 @@ mod position_struct {
 }
 
 mod coordinate {
-    use crate::errors::FloatCoordinateConversionError;
     use std::{fmt::Debug, ops::*};
 
     /// A type that can be used as a coordinate type for [`Position`]
     ///
     /// Typically, you will want to use one of a few strategies for your [`Coordinate`] type:
-    /// - if you would like continuous coordinates, use [`f32`]
-    /// - if you're working with a grid-like position system, use one of the types provided in [`discrete_coordinates`]
-    ///   - the [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) trait provides other useful functionality for your game!
+    /// - if you would like continuous coordinates for smooth movement, use one of the types provided in [`continuous`](crate::continuous)
+    /// - if you're working with a grid-like position system, use one of the types provided in [`discrete`](crate::discrete)
+    ///   - the [`DiscreteCoordinate`](crate::discrete::DiscreteCoordinate) trait provides other useful functionality for your game!
     /// - if you have unusual needs (such as extremely large worlds or tight memory constraints),
     /// implement [`Coordinate`] and optionally [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) for your own type
+    ///    - if you are simply wrapping a single value, strongly consider deriving [`TrivialCoordinate`] to reduce the required boilerplate
     ///    - in this type, you can wrap your own [`f64`], [`u8`], fixed-point number type or so on.
+    ///
+    /// # Conversion
+    ///
+    /// Each [`Coordinate`] type stores its own [`Coordinate::COORD_TO_TRANSFORM`] ratio,
+    /// which is used to convert to and from [`Transform`](bevy_transform::components::Transform) correctly.
+    /// When converting to and from [`Transform`](bevy_transform::components::Transform),
+    /// [`GlobalTransform`](bevy_transform::components::GlobalTransform), [`Vec2`](bevy_math::Vec2) and [`Vec3`](bevy_math::Vec3),
+    /// the values stored in your [`Coordinate`] component will be scaled appropriately to take advantage of the range
+    /// of allowable transforms while ensuring that both conversions directions are infallible.
     pub trait Coordinate:
         Copy
         + Debug
@@ -132,10 +141,11 @@ mod coordinate {
         + Send
         + Sync
         + Into<f32>
+        + From<f32>
         + 'static
     {
-        /// Attempt to create a [`Coordinate`] from a `f32`, as might be returned by [`Transform`](bevy_transform::components::Transform)
-        fn try_from_f32(float: f32) -> Result<Self, FloatCoordinateConversionError>;
+        /// The ratio between 1 unit in this coordinate system to 1 unit of [`Transform.translation`](bevy_transform::components::Transform)
+        const COORD_TO_TRANSFORM: f32;
     }
 
     /// A helper trait for [`Coordinate`] types that simply wrap a single number-like value
@@ -321,19 +331,17 @@ mod basic_operations {
 // When relevant, z-values are simply ignored
 mod conversions {
     use super::*;
-    use crate::errors::{FloatCoordinateConversionError, NearlySingularConversion};
+    use crate::errors::NearlySingularConversion;
     use crate::orientation::{Direction, Rotation};
     use bevy_math::{Quat, Vec2, Vec3};
     use bevy_transform::components::{GlobalTransform, Transform};
 
-    impl<C: Coordinate> TryFrom<Vec2> for Position<C> {
-        type Error = FloatCoordinateConversionError;
+    impl<C: Coordinate> From<Vec2> for Position<C> {
+        fn from(vec: Vec2) -> Position<C> {
+            let x = C::from(vec.x);
+            let y = C::from(vec.y);
 
-        fn try_from(vec: Vec2) -> Result<Position<C>, FloatCoordinateConversionError> {
-            let x = C::try_from_f32(vec.x)?;
-            let y = C::try_from_f32(vec.y)?;
-
-            Ok(Position { x, y })
+            Position { x, y }
         }
     }
 
@@ -379,38 +387,30 @@ mod conversions {
         }
     }
 
-    impl<C: Coordinate> TryFrom<Vec3> for Position<C> {
-        type Error = FloatCoordinateConversionError;
+    impl<C: Coordinate> From<Vec3> for Position<C> {
+        fn from(vec: Vec3) -> Position<C> {
+            let x = C::from(vec.x);
+            let y = C::from(vec.y);
 
-        fn try_from(vec: Vec3) -> Result<Position<C>, FloatCoordinateConversionError> {
-            let x = C::try_from_f32(vec.x)?;
-            let y = C::try_from_f32(vec.y)?;
-
-            Ok(Position { x, y })
+            Position { x, y }
         }
     }
 
-    impl<C: Coordinate> TryFrom<Transform> for Position<C> {
-        type Error = FloatCoordinateConversionError;
+    impl<C: Coordinate> From<Transform> for Position<C> {
+        fn from(transform: Transform) -> Position<C> {
+            let x = C::from(transform.translation.x);
+            let y = C::from(transform.translation.y);
 
-        fn try_from(transform: Transform) -> Result<Position<C>, FloatCoordinateConversionError> {
-            let x = C::try_from_f32(transform.translation.x)?;
-            let y = C::try_from_f32(transform.translation.y)?;
-
-            Ok(Position { x, y })
+            Position { x, y }
         }
     }
 
-    impl<C: Coordinate> TryFrom<GlobalTransform> for Position<C> {
-        type Error = FloatCoordinateConversionError;
+    impl<C: Coordinate> From<GlobalTransform> for Position<C> {
+        fn from(transform: GlobalTransform) -> Position<C> {
+            let x = C::from(transform.translation.x);
+            let y = C::from(transform.translation.y);
 
-        fn try_from(
-            transform: GlobalTransform,
-        ) -> Result<Position<C>, FloatCoordinateConversionError> {
-            let x = C::try_from_f32(transform.translation.x)?;
-            let y = C::try_from_f32(transform.translation.y)?;
-
-            Ok(Position { x, y })
+            Position { x, y }
         }
     }
 }
