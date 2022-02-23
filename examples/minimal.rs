@@ -17,6 +17,8 @@ fn main() {
         .add_system(move_towards_click)
         // Or, we can use the included kinematics to work in terms of velocity and acceleration
         .add_system(accelerate_player)
+        // Use an AABB to ensure the player doesn't go out of bounds
+        .add_system(bound_player)
         .run();
 }
 
@@ -67,4 +69,15 @@ fn accelerate_player(
     if input.pressed(KeyCode::Up) {
         *velocity += Velocity::new(10., direction);
     }
+}
+
+fn bound_player(query: Query<&mut Transform, With<Player>>, windows: Res<Windows>) {
+    // Notice that we can set Transform directly, and the 2D versions are synced
+    let player_transform = query.single_mut();
+
+    let window = windows.get_primary().unwrap();
+    let aabb =
+        AxisAlignedBoundingBox::from_size(Position::default(), window.width(), window.height());
+
+    *player_position = aabb.clamp(player_position);
 }
