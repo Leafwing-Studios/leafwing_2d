@@ -10,12 +10,8 @@ use leafwing_2d::prelude::*;
 use leafwing_2d::orientation::Direction;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
-const PLAY_AREA: AxisAlignedBoundingBox<f32> = AxisAlignedBoundingBox {
-    low_x: -600.0,
-    low_y: -320.0,
-    high_x: 600.0,
-    high_y: 320.0,
-};
+const PLAY_AREA: AxisAlignedBoundingBox<f32> =
+    AxisAlignedBoundingBox::new(-600.0, -320.0, 600.0, 320.0);
 
 const BOUNDS: Vec2 = const_vec2!([1200.0, 640.0]);
 

@@ -69,13 +69,13 @@ pub enum Intersects {
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
 pub struct AxisAlignedBoundingBox<C: Coordinate> {
     /// The left extent of the bounding box
-    pub low_x: C,
-    /// The bottom extent of the bounding box
-    pub low_y: C,
-    /// The right extent of the bounding box
-    pub high_x: C,
+    left: C,
     /// The top extent of the bounding box
-    pub high_y: C,
+    right: C,
+    /// The bottom extent of the bounding box
+    bottom: C,
+    /// The right extent of the bounding box
+    top: C,
 }
 
 impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
@@ -92,23 +92,23 @@ impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
 
     fn draw_around(positions: impl IntoIterator<Item = Position<Self::C>>) -> Self {
         let mut aabb = Self {
-            low_x: C::default(),
-            low_y: C::default(),
-            high_x: C::default(),
-            high_y: C::default(),
+            left: C::default(),
+            bottom: C::default(),
+            top: C::default(),
+            right: C::default(),
         };
 
         for position in positions.into_iter() {
-            if position.x < aabb.low_x {
-                aabb.low_x = position.x;
-            } else if position.x > aabb.high_x {
-                aabb.high_x = position.x;
+            if position.x < aabb.left {
+                aabb.left = position.x;
+            } else if position.x > aabb.top {
+                aabb.top = position.x;
             }
 
-            if position.y < aabb.low_y {
-                aabb.low_y = position.y;
-            } else if position.y > aabb.high_y {
-                aabb.high_y = position.y;
+            if position.y < aabb.bottom {
+                aabb.bottom = position.y;
+            } else if position.y > aabb.right {
+                aabb.right = position.y;
             }
         }
 
@@ -116,17 +116,17 @@ impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
     }
 
     fn contains(&self, position: Position<Self::C>) -> bool {
-        (self.low_x <= position.x)
-            & (self.low_y <= position.y)
-            & (self.high_x >= position.x)
-            & (self.high_y >= position.y)
+        (self.left <= position.x)
+            & (self.bottom <= position.y)
+            & (self.top >= position.x)
+            & (self.right >= position.y)
     }
 
     fn intersects(&self, other: Self) -> Intersects {
-        if (self.low_x > other.high_x)
-            | (other.low_x > self.high_x)
-            | (self.low_y > other.high_y)
-            | (other.low_y > self.high_y)
+        if (self.left > other.top)
+            | (other.left > self.top)
+            | (self.bottom > other.right)
+            | (other.bottom > self.right)
         {
             Intersects::No
         } else {
@@ -137,16 +137,16 @@ impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
     fn clamp(&self, position: Position<Self::C>) -> Position<Self::C> {
         let mut new_position = position;
 
-        if position.x < self.low_x {
-            new_position.x = self.low_x;
-        } else if position.x > self.high_x {
-            new_position.x = self.high_x;
+        if position.x < self.left {
+            new_position.x = self.left;
+        } else if position.x > self.top {
+            new_position.x = self.top;
         }
 
-        if position.y < self.low_y {
-            new_position.y = self.low_y;
-        } else if position.y > self.high_y {
-            new_position.y = self.high_y;
+        if position.y < self.bottom {
+            new_position.y = self.bottom;
+        } else if position.y > self.right {
+            new_position.y = self.right;
         }
 
         new_position
@@ -154,43 +154,72 @@ impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
 }
 
 impl<C: Coordinate> AxisAlignedBoundingBox<C> {
+    #[inline]
+    #[must_use]
+    /// Creates a new AABB from the coordinate values of its sides
+    pub const fn new(left: C, right: C, bottom: C, top: C) -> Self {
+        Self {
+            left,
+            right,
+            bottom,
+            top,
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    /// Creates a new AABB from a central `Postion` plus a `width` and `height`
+    pub const fn from_size(position: Position<C>, width: C, height: C) -> Self {
+        let left = position.x - width / 2.;
+        let right = position.x + width / 2.;
+        let bottom = position.y - height / 2;
+        let top = position.y + height / 2;
+
+        Self {
+            left,
+            right,
+            bottom,
+            top,
+        }
+    }
+
     /// Gets the bottom left [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub fn bottom_left(&self) -> Position<C> {
+    pub const fn bottom_left(&self) -> Position<C> {
         Position {
-            x: self.low_x,
-            y: self.low_y,
+            x: self.left,
+            y: self.bottom,
         }
     }
 
     /// Gets the bottom right [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub fn bottom_right(&self) -> Position<C> {
+    pub const fn bottom_right(&self) -> Position<C> {
         Position {
-            x: self.high_x,
-            y: self.low_y,
+            x: self.top,
+            y: self.bottom,
         }
     }
 
     /// Gets the top left [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub fn top_left(&self) -> Position<C> {
+    pub const fn top_left(&self) -> Position<C> {
         Position {
-            x: self.low_x,
-            y: self.high_y,
+            x: self.left,
+            y: self.right,
         }
     }
 
     /// Gets the top right [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub fn top_right(&self) -> Position<C> {
+    pub const fn top_right(&self) -> Position<C> {
         Position {
-            x: self.high_x,
-            y: self.high_y,
+            x: self.top,
+            y: self.right,
         }
     }
 }
