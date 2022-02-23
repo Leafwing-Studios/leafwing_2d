@@ -219,11 +219,9 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
                 *direction = new_direction;
             }
         } else if direction.is_changed() {
-            // Direction can be [0, 0], so this conversion if fallible
-            if let Ok(new_rotation) = (*direction).try_into() {
-                if *rotation != new_rotation {
-                    *rotation = new_rotation;
-                }
+            let new_rotation = (*direction).into();
+            if *rotation != new_rotation {
+                *rotation = new_rotation;
             }
         }
     }
