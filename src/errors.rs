@@ -3,8 +3,8 @@
 use derive_more::{Display, Error};
 
 /// A float could not be converted into a [`Coordinate`]
-#[derive(Debug, Clone, Copy, Error, Display, PartialEq, Eq)]
-pub struct FloatCoordinateConversionError;
+#[derive(Debug, Clone, Copy, Display, PartialEq)]
+pub struct FloatCoordinateConversionError(pub f32);
 
 /// The supplied vector-like struct was too close to zero to be converted into a rotation-like type
 ///

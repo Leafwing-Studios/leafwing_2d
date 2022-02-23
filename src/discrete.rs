@@ -7,7 +7,6 @@
 use crate::orientation::Direction;
 use crate::partitioning::DirectionParitioning;
 use crate::position::{Coordinate, Position};
-use derive_more::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 
 /// A type that can be used to represent a discrete 2-dimensional coordinate
 ///
@@ -59,24 +58,6 @@ pub trait DiscreteCoordinate: Coordinate {
 /// [`DiscreteCoordinate`] primitive for a square grid, where each cell has four neighbors
 ///
 /// Neighboring tiles must touch on their faces
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Add,
-    AddAssign,
-    Sub,
-    SubAssign,
-    Rem,
-    RemAssign,
-    Mul,
-    MulAssign,
-    Div,
-    DivAssign,
-    PartialEq,
-    Default,
-    PartialOrd,
-)]
 pub struct OrthogonalGrid(pub isize);
 
 /*

@@ -1,6 +1,6 @@
 //! 2-dimensional coordinates
 
-pub use coordinate::Coordinate;
+pub use coordinate::{Coordinate, TrivialCoordinate};
 pub use position_struct::Position;
 pub use positionlike::Positionlike;
 
@@ -108,7 +108,7 @@ mod coordinate {
     /// A type that can be used as a coordinate type for [`Position`]
     ///
     /// Typically, you will want to use one of a few strategies for your [`Coordinate`] type:
-    /// - if you just need simple continuous coordinates, use [`f32`]
+    /// - if you would like continuous coordinates, use [`f32`]
     /// - if you're working with a grid-like position system, use one of the types provided in [`discrete_coordinates`]
     ///   - the [`DiscreteCoordinate`](discrete_coordinates::DiscreteCoordinate) trait provides other useful functionality for your game!
     /// - if you have unusual needs (such as extremely large worlds or tight memory constraints),
@@ -138,36 +138,54 @@ mod coordinate {
         fn try_from_f32(float: f32) -> Result<Self, FloatCoordinateConversionError>;
     }
 
-    impl<T> Coordinate for T
-    where
-        T: Copy
-            + Debug
-            + Default
-            + Add<Output = Self>
-            + AddAssign
-            + Sub<Output = Self>
-            + SubAssign
-            + Mul<Output = Self>
-            + MulAssign
-            + Div<Output = Self>
-            + DivAssign
-            + Rem<Output = Self>
-            + RemAssign
-            + PartialOrd
-            + Send
-            + Sync
-            + Into<f32>
-            + TryFrom<f32>
-            + 'static,
-    {
-        fn try_from_f32(float: f32) -> Result<Self, FloatCoordinateConversionError> {
-            let result = float.try_into();
-
-            match result {
-                Ok(coordinate) => Ok(coordinate),
-                Err(_) => Err(FloatCoordinateConversionError),
-            }
-        }
+    /// A helper trait for [`Coordinate`] types that simply wrap a single number-like value
+    ///
+    /// Use `#derive(TrivialCoordinate)]` to implement all of the trivial trait bounds on [`Coordinate`] for you.
+    /// All types that impl [`TrivialCoordinate`] + [`Into<f32>`] + [`TryFrom<f32>`]
+    /// with a [`FloatCoordinateConversionError`] error type are automatically [`Coordinate`] types.
+    ///
+    /// # Example
+    /// ```rust
+    /// use leafwing_2d::position::{Coordinate, Trivial Coordinate};
+    ///
+    /// // This cause `TinyCoordinate` to automatically have the right trait impls
+    /// // (e.g. Copy, Add, Debug and so on) due to blanket impls on `TrivialCoordinate`.
+    /// #[derive(TrivialCoordinate`)]
+    /// struct TinyCoordinate(u8);
+    ///
+    /// // We need a way to convert to and from Transform.translation
+    /// // from our coordinate system.
+    /// // In this example, we're choosing to scale our grid over a large fraction of the usable space of f32.
+    /// const MAX_TRANSLATION: f32 = 1E+9;
+    /// const SCALE_FACTOR: f32 = MAX_TRANSLATION / (u8::MAX as f32);
+    ///
+    /// // This automatically gets us the `Into<f32>` impl we need
+    /// impl From<TinyCoordinate> for f32 {
+    ///     fn from(coordinate: TinyCoordinate) -> f32 {
+    ///         (coordinate as f32) * SCALE_FACTOR
+    ///     }
+    /// }
+    ///
+    /// // Be careful to ensure that these methods are the inverse of each other!
+    /// impl TryFrom<f32> for TinyCoordinate {
+    ///     type Error = FloatCoordinateConversionError;
+    ///
+    ///     fn from(float: f32) -> Result<TinyCoordinate, FloatCoordinateConversionError> {
+    ///         if float <= MAX_TRANSLATION {
+    ///            let integer = ((coordinate as f32) / SCALE_FACTOR).round() as u8;
+    ///            Ok(TinyCoordinate(integer))
+    ///         } else {
+    ///             Err(FloatCoordinateConversionError(float))
+    ///         }
+    ///     }
+    /// }
+    ///
+    /// // Congratulations: it's a `Coordinate`!
+    /// let position: Position<TrivialCoordinate> = Position::new(0,0);
+    /// ```
+    pub trait TrivialCoordinate {
+        type Wrapped;
+        fn value(&self) -> Self::Wrapped;
     }
 }
 

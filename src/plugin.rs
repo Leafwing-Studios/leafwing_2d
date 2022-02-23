@@ -1,5 +1,6 @@
 //! Tools for using two-dimensional coordinates within `bevy` games
 
+use crate::continuous::F32;
 use crate::kinematics::systems::{angular_kinematics, linear_kinematics};
 use crate::kinematics::{Acceleration, AngularAcceleration, AngularVelocity, Velocity};
 use crate::orientation::{Direction, Rotation};
@@ -109,17 +110,17 @@ pub struct TwoDPlugin<
     pub stage: UserStage,
     /// What [`Coordinate`] should be used?
     ///
-    /// Default: [`f32`]
+    /// Default: [`F32`]
     pub coordinate_type: PhantomData<C>,
 }
 
-impl Default for TwoDPlugin<f32, GameState, CoreStage> {
+impl Default for TwoDPlugin<F32, GameState, CoreStage> {
     fn default() -> Self {
         Self {
             kinematics: true,
             kinematics_state: None,
             stage: CoreStage::PostUpdate,
-            coordinate_type: PhantomData::<f32>::default(),
+            coordinate_type: PhantomData::<F32>::default(),
         }
     }
 }
