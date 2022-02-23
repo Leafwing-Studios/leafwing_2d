@@ -87,7 +87,7 @@ mod kinematic_trait {
 
         fn new(magnitude: C, direction: Direction) -> Self {
             let magnitude: f32 = magnitude.into();
-            let x = C::try_from_f32(magnitude * direction.unit_vector().y).unwrap();
+            let x = C::try_from_f32(magnitude * direction.unit_vector().x).unwrap();
             let y = C::try_from_f32(magnitude * direction.unit_vector().y).unwrap();
 
             Velocity { x, y }
@@ -117,7 +117,7 @@ mod kinematic_trait {
 
         fn new(magnitude: C, direction: Direction) -> Self {
             let magnitude: f32 = magnitude.into();
-            let x = C::try_from_f32(magnitude * direction.unit_vector().y).unwrap();
+            let x = C::try_from_f32(magnitude * direction.unit_vector().x).unwrap();
             let y = C::try_from_f32(magnitude * direction.unit_vector().y).unwrap();
 
             Acceleration { x, y }
