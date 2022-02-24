@@ -67,7 +67,7 @@ mod kinematic_trait {
         type D: PartialEq;
 
         /// Creates a new vector, defined by its `magnitude` and `direction`
-        fn new(magnitude: Self::M, direction: Self::D) -> Self;
+        fn new(magnitude: impl Into<Self::M>, direction: impl Into<Self::D>) -> Self;
 
         /// The strength (or length) of this vector
         fn magnitude(&self) -> Self::M;
@@ -85,8 +85,11 @@ mod kinematic_trait {
         type M = C;
         type D = Direction;
 
-        fn new(magnitude: C, direction: Direction) -> Self {
-            let magnitude: f32 = magnitude.into();
+        fn new(magnitude: impl Into<C>, direction: impl Into<Direction>) -> Self {
+            let coordinate: C = magnitude.into();
+            let magnitude: f32 = coordinate.into();
+            let direction = direction.into();
+
             let x = C::from(magnitude * direction.unit_vector().x);
             let y = C::from(magnitude * direction.unit_vector().y);
 
@@ -103,7 +106,12 @@ mod kinematic_trait {
         }
 
         fn direction(&self) -> Option<Direction> {
-            if let Ok(direction) = Position::new(self.x, self.y).try_into() {
+            let position = Position {
+                x: self.x,
+                y: self.y,
+            };
+
+            if let Ok(direction) = position.try_into() {
                 Some(direction)
             } else {
                 None
@@ -115,8 +123,11 @@ mod kinematic_trait {
         type M = C;
         type D = Direction;
 
-        fn new(magnitude: C, direction: Direction) -> Self {
-            let magnitude: f32 = magnitude.into();
+        fn new(magnitude: impl Into<C>, direction: impl Into<Direction>) -> Self {
+            let coordinate: C = magnitude.into();
+            let magnitude: f32 = coordinate.into();
+            let direction = direction.into();
+
             let x = C::from(magnitude * direction.unit_vector().x);
             let y = C::from(magnitude * direction.unit_vector().y);
 
@@ -133,7 +144,12 @@ mod kinematic_trait {
         }
 
         fn direction(&self) -> Option<Direction> {
-            if let Ok(direction) = Position::new(self.x, self.y).try_into() {
+            let position = Position {
+                x: self.x,
+                y: self.y,
+            };
+
+            if let Ok(direction) = position.try_into() {
                 Some(direction)
             } else {
                 None
@@ -146,7 +162,10 @@ mod kinematic_trait {
         type M = isize;
         type D = RotationDirection;
 
-        fn new(magnitude: isize, direction: RotationDirection) -> Self {
+        fn new(magnitude: impl Into<isize>, direction: impl Into<RotationDirection>) -> Self {
+            let magnitude: isize = magnitude.into();
+            let direction: RotationDirection = direction.into();
+
             AngularVelocity {
                 deci_degrees: magnitude * direction.sign(),
             }
@@ -176,7 +195,10 @@ mod kinematic_trait {
         type M = isize;
         type D = RotationDirection;
 
-        fn new(magnitude: isize, direction: RotationDirection) -> Self {
+        fn new(magnitude: impl Into<isize>, direction: impl Into<RotationDirection>) -> Self {
+            let magnitude: isize = magnitude.into();
+            let direction: RotationDirection = direction.into();
+
             AngularAcceleration {
                 deci_degrees: magnitude * direction.sign(),
             }

@@ -69,13 +69,13 @@ pub enum Intersects {
 #[derive(Debug, Component, Clone, PartialEq, Eq)]
 pub struct AxisAlignedBoundingBox<C: Coordinate> {
     /// The left extent of the bounding box
-    left: C,
+    pub left: C,
     /// The top extent of the bounding box
-    right: C,
+    pub right: C,
     /// The bottom extent of the bounding box
-    bottom: C,
+    pub bottom: C,
     /// The right extent of the bounding box
-    top: C,
+    pub top: C,
 }
 
 impl<C: Coordinate> BoundingRegion for AxisAlignedBoundingBox<C> {
@@ -157,19 +157,31 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[inline]
     #[must_use]
     /// Creates a new AABB from the coordinate values of its sides
-    pub fn new(left: C, right: C, bottom: C, top: C) -> Self {
+    pub fn new(
+        left: impl Into<C>,
+        right: impl Into<C>,
+        bottom: impl Into<C>,
+        top: impl Into<C>,
+    ) -> Self {
         Self {
-            left,
-            right,
-            bottom,
-            top,
+            left: left.into(),
+            right: right.into(),
+            bottom: bottom.into(),
+            top: top.into(),
         }
     }
 
     #[inline]
     #[must_use]
     /// Creates a new AABB from a central `Postion` plus a `width` and `height`
-    pub fn from_size(position: Position<C>, half_width: C, half_height: C) -> Self {
+    pub fn from_size(
+        position: Position<C>,
+        half_width: impl Into<C>,
+        half_height: impl Into<C>,
+    ) -> Self {
+        let half_width = half_width.into();
+        let half_height = half_height.into();
+
         let left = position.x - half_width;
         let right = position.x + half_width;
         let bottom = position.y - half_height;

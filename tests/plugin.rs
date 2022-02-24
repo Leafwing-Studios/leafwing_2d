@@ -60,7 +60,7 @@ fn test_app() -> App {
 }
 
 fn test_entity(mut commands: Commands) {
-    commands.spawn_bundle(TwoDBundle::<f32>::default());
+    commands.spawn_bundle(TwoDBundle::<F32>::default());
 }
 
 fn assert_orientation_matches(query: Query<(Option<&Rotation>, Option<&Direction>, &Transform)>) {
@@ -75,7 +75,7 @@ fn assert_orientation_matches(query: Query<(Option<&Rotation>, Option<&Direction
     }
 }
 
-fn assert_position_matches(query: Query<(&Position<f32>, &Transform)>) {
+fn assert_position_matches(query: Query<(&Position<F32>, &Transform)>) {
     for (&position, &transform) in query.iter() {
         transform.translation.assert_approx_eq(position);
     }
@@ -149,25 +149,40 @@ fn sync_position() {
     app.update();
 
     // Changing position
-    app.set_component(Position::new(1.0, 1.0));
+    app.set_component(Position {
+        x: F32(1.0),
+        y: F32(1.0),
+    });
     app.update();
     app.assert_positionlike_approx_eq(Transform::from_xyz(1.0, 1.0, 0.0));
 
     // Changing transform translation
     app.set_component(Transform::from_xyz(2.0, 2.0, 0.0));
     app.update();
-    app.assert_positionlike_approx_eq(Position::new(2.0, 2.0));
+    app.assert_positionlike_approx_eq(Position {
+        x: F32(2.0),
+        y: F32(2.0),
+    });
 
     // Changing transform and position (position wins)
-    app.set_component(Position::new(3.0, 3.0));
+    app.set_component(Position {
+        x: F32(3.0),
+        y: F32(3.0),
+    });
     app.set_component(Transform::from_xyz(0.0, 42.0, 0.0));
     app.update();
     app.assert_positionlike_approx_eq(Transform::from_xyz(3.0, 3.0, 0.0));
-    app.assert_positionlike_approx_eq(Position::new(3.0, 3.0));
+    app.assert_positionlike_approx_eq(Position {
+        x: F32(3.0),
+        y: F32(3.0),
+    });
 
     // Z is unmodified
     app.set_component(Transform::from_xyz(0.0, 42.0, 5.0));
-    app.set_component(Position::new(4.0, 4.0));
+    app.set_component(Position {
+        x: F32(4.0),
+        y: F32(4.0),
+    });
 
     app.update();
     app.assert_positionlike_approx_eq(Transform::from_xyz(4.0, 4.0, 5.0));

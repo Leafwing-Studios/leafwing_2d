@@ -10,8 +10,12 @@ use leafwing_2d::prelude::*;
 use leafwing_2d::orientation::Direction;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
-const PLAY_AREA: AxisAlignedBoundingBox<F32> =
-    AxisAlignedBoundingBox::new(-600.0, -320.0, 600.0, 320.0);
+const PLAY_AREA: AxisAlignedBoundingBox<F32> = AxisAlignedBoundingBox {
+    left: F32(-600.0),
+    bottom: F32(-320.0),
+    right: F32(600.0),
+    top: F32(320.0),
+};
 
 const BOUNDS: Vec2 = const_vec2!([1200.0, 640.0]);
 
@@ -119,7 +123,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: enemy_b_handle,
             ..Default::default()
         })
-        .insert(Position::<f32>::new(0.0, vertical_margin))
+        .insert(Position::<F32>::new(0.0, vertical_margin))
         .insert(Rotation::default())
         .insert(RotateToPlayer {
             rotation_speed: f32::to_radians(90.0), // degrees per second
@@ -129,7 +133,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 /// Demonstrates applying rotation and movement based on keyboard input.
 fn player_movement_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Player, &mut Position<f32>, &mut Rotation)>,
+    mut query: Query<(&Player, &mut Position<F32>, &mut Rotation)>,
 ) {
     let (ship, mut position, mut rotation) = query.single_mut();
 

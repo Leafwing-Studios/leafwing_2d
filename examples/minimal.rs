@@ -61,7 +61,7 @@ fn rotate_player(mut query: Query<&mut Rotation, With<Player>>, input: Res<Input
 fn move_towards_click() {}
 
 fn accelerate_player(
-    mut query: Query<(&Direction, &mut Velocity<f32>), With<Player>>,
+    mut query: Query<(&Direction, &mut Velocity<F32>), With<Player>>,
     input: Res<Input<KeyCode>>,
 ) {
     let (&direction, mut velocity) = query.single_mut();
@@ -71,13 +71,18 @@ fn accelerate_player(
     }
 }
 
-fn bound_player(query: Query<&mut Transform, With<Player>>, windows: Res<Windows>) {
-    // Notice that we can set Transform directly, and the 2D versions are synced
-    let player_transform = query.single_mut();
+fn bound_player(mut query: Query<&mut Transform, With<Player>>, windows: Res<Windows>) {
+    let mut player_transform = query.single_mut();
 
     let window = windows.get_primary().unwrap();
-    let aabb =
-        AxisAlignedBoundingBox::from_size(Position::default(), window.width(), window.height());
+    let aabb = AxisAlignedBoundingBox::from_size(
+        Position::default(),
+        F32(window.width()),
+        F32(window.height()),
+    );
 
-    *player_position = aabb.clamp(player_position);
+    let player_position: Position<F32> = (*player_transform).into();
+
+    // Notice that we can set Transform directly, and the 2D versions are synced
+    *player_transform = aabb.clamp(player_position).into();
 }

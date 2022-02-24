@@ -21,11 +21,7 @@ impl From<F32> for f32 {
 
 impl Coordinate for F32 {
     const COORD_TO_TRANSFORM: f32 = 1.0;
-    const MIN: Self = f32::MIN.into();
-    const MAX: Self = f32::MAX.into();
-    const ZERO: Self = 0.0.into();
+    const MIN: Self = F32(f32::MIN);
+    const MAX: Self = F32(f32::MAX);
+    const ZERO: Self = F32(0.0);
 }
-
-/// A [`f64`]-backed [`Coordinate`]
-#[derive(TrivialCoordinate)]
-pub struct F64(pub f64);

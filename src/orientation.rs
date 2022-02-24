@@ -58,7 +58,7 @@ mod orientation_trait {
         /// ```
         #[inline]
         #[must_use]
-        fn orientation_to(
+        fn required_orientation_to(
             &self,
             target: Self,
             rotation_direction: Option<RotationDirection>,

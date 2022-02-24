@@ -1,9 +1,11 @@
 //! Tools for using two-dimensional coordinates within `bevy` games
 
+use crate::continuous::F32;
 use crate::kinematics::systems::{angular_kinematics, linear_kinematics};
 use crate::kinematics::{Acceleration, AngularAcceleration, AngularVelocity, Velocity};
 use crate::orientation::{Direction, Rotation};
 use crate::position::{Coordinate, Position};
+
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_ecs::schedule::ShouldRun;
@@ -112,7 +114,6 @@ pub struct TwoDPlugin<
     pub coordinate_type: PhantomData<C>,
 }
 
-/*
 impl Default for TwoDPlugin<F32, GameState, CoreStage> {
     fn default() -> Self {
         Self {
@@ -123,7 +124,6 @@ impl Default for TwoDPlugin<F32, GameState, CoreStage> {
         }
     }
 }
-*/
 
 /// Is the game paused?
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
