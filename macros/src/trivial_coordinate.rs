@@ -177,5 +177,38 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
                 self.0 = self.0 % other.0
             }
         }
+
+        // Scaling
+        impl #impl_generics core::ops::Mul<#wrapped_type> for #struct_name #type_generics #where_clause {
+            type Output = #struct_name #type_generics;
+
+            fn mul(self, other: #wrapped_type) -> Self::Output {
+                Self(self.0 * other)
+            }
+        }
+
+        impl #impl_generics core::ops::Div<#wrapped_type> for #struct_name #type_generics #where_clause {
+            type Output = #struct_name #type_generics;
+
+            fn div(self, other: #wrapped_type) -> Self::Output {
+                Self(self.0 / other)
+            }
+        }
+
+        impl #impl_generics core::ops::Mul<#struct_name #type_generics> for #wrapped_type #where_clause {
+            type Output = #struct_name #type_generics;
+
+            fn mul(self, other: #struct_name #type_generics) -> Self::Output {
+                #struct_name(self * other.0)
+            }
+        }
+
+        impl #impl_generics core::ops::Div<#struct_name #type_generics> for #wrapped_type #where_clause {
+            type Output = #struct_name #type_generics;
+
+            fn div(self, other: #struct_name #type_generics) -> Self::Output {
+                #struct_name(self / other.0)
+            }
+        }
     }
 }
