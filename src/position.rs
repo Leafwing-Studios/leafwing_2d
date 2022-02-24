@@ -102,6 +102,7 @@ mod position_struct {
 }
 
 mod coordinate {
+    use crate::position::Position;
     use std::{fmt::Debug, ops::*};
 
     /// A type that can be used as a coordinate type for [`Position`]
@@ -154,6 +155,15 @@ mod coordinate {
 
         /// The maximum representable value
         const MAX: Self;
+
+        /// Adding or subtracting this coordinate to another coordinate does not change the value
+        const ZERO: Self;
+
+        /// The (0, 0) cell [`Position`]
+        const ORIGIN: Position<Self> = Position {
+            x: Self::ZERO,
+            y: Self::ZERO,
+        };
 
         /// Checks that [`Coordinate::MIN`] and [`Coordinate::MAX`] can be converted to and from `f32` in a reasonable fashion
         ///

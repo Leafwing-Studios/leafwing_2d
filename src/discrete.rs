@@ -14,22 +14,21 @@ use crate::position::{Coordinate, Position};
 pub trait DiscreteCoordinate: Coordinate {
     /// The number of neighbors
     const N_NEIGHBORS: usize;
-    /// Adding or subtracting this coordinate to another coordinate does not change the value
-    const ZERO: Self;
-    /// The (0, 0) cell [`Position`]
-    const ORIGIN: Position<Self> = Position {
-        x: Self::ZERO,
-        y: Self::ZERO,
-    };
 
     /// The [`DirectionParitioning`] that determines how [`Directions`](Direction) should map to neighbors
     type Parititions: DirectionParitioning;
 
-    /// Creates a [`Position`] from the pair of values provided
+    /// Gets the next higher value
+    ///
+    /// Typically, this is just adding 1, bounded by [`Coordinate::MAX`].
     #[must_use]
-    fn position(x: Self, y: Self) -> Position<Self> {
-        Position { x, y }
-    }
+    fn next(&self) -> Self;
+
+    /// Get the next lower value
+    ///
+    /// Typically, this is just subtracting 1, bounded by [`Coordinate::MIN`].
+    #[must_use]
+    fn prev(&self) -> Self;
 
     /// Fetches the array of neighboring [`Positions`](Position), in a fixed order
     ///
@@ -52,6 +51,25 @@ pub trait DiscreteCoordinate: Coordinate {
                 .try_into()
                 .expect("The positions of the neighbors cannot be (0,0).")
         })
+    }
+
+    /// Asserts that the values near the end of this range can be losslessly converted to and from [`f32`]
+    ///
+    /// If this assertion fails, your values are too tightly packed.
+    /// Either decrease [`MAX`](Coordinate::MAX) and [`MIN`](Coordinate::MIN),
+    /// or increase your [`COORD_TO_TRANSFORM`](Coordinate::COORD_TO_TRANSFORM) scale factor.
+    fn assert_values_distinct() {
+        let max_minus_one = Self::MAX.prev();
+        let max_minus_two = Self::MAX.prev().prev();
+        let min_plus_one = Self::MIN.next();
+        let min_plus_two = Self::MIN.next().next();
+
+        assert_eq!(Self::MAX.round_trip_coordinate_error(), Self::ZERO);
+        assert_eq!(max_minus_one.round_trip_coordinate_error(), Self::ZERO);
+        assert_eq!(max_minus_two.round_trip_coordinate_error(), Self::ZERO);
+        assert_eq!(Self::MIN.round_trip_coordinate_error(), Self::ZERO);
+        assert_eq!(min_plus_one.round_trip_coordinate_error(), Self::ZERO);
+        assert_eq!(min_plus_two.round_trip_coordinate_error(), Self::ZERO);
     }
 }
 
