@@ -107,13 +107,13 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics core::ops::Add for #struct_name #type_generics #where_clause {
             type Output = Self;
 
-            fn add(&self, other: &Self) -> Self {
+            fn add(self, other: Self) -> Self {
                 Self(self.0 + other.0)
             }
         }
 
         impl #impl_generics core::ops::AddAssign for #struct_name #type_generics #where_clause {
-            fn add_assign(&mut self, other: &Self) {
+            fn add_assign(&mut self, other: Self) {
                 self.0 = self.0 + other.0
             }
         }
@@ -122,13 +122,13 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics core::ops::Sub for #struct_name #type_generics #where_clause {
             type Output = Self;
 
-            fn sub(&self, other: &Self) -> Self {
+            fn sub(self, other: Self) -> Self {
                 Self(self.0 - other.0)
             }
         }
 
         impl #impl_generics core::ops::SubAssign for #struct_name #type_generics #where_clause {
-            fn sub_assign(&mut self, other: &Self) {
+            fn sub_assign(&mut self, other: Self) {
                 self.0 = self.0 - other.0
             }
         }
@@ -137,13 +137,13 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics core::ops::Mul for #struct_name #type_generics #where_clause {
             type Output = Self;
 
-            fn mul(&self, other: &Self) -> Self {
+            fn mul(self, other: Self) -> Self {
                 Self(self.0 * other.0)
             }
         }
 
         impl #impl_generics core::ops::MulAssign for #struct_name #type_generics #where_clause {
-            fn mul_assign(&mut self, other: &Self) {
+            fn mul_assign(&mut self, other: Self) {
                 self.0 = self.0 * other.0
             }
         }
@@ -152,13 +152,13 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics core::ops::Div for #struct_name #type_generics #where_clause {
             type Output = Self;
 
-            fn div(&self, other: &Self) -> Self {
+            fn div(self, other: Self) -> Self {
                 Self(self.0 / other.0)
             }
         }
 
         impl #impl_generics core::ops::DivAssign for #struct_name #type_generics #where_clause {
-            fn div_assign(&mut self, other: &Self) {
+            fn div_assign(&mut self, other: Self) {
                 self.0 = self.0 / other.0
             }
         }
@@ -167,13 +167,13 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics core::ops::Rem for #struct_name #type_generics #where_clause {
             type Output = Self;
 
-            fn rem(&self, other: &Self) -> Self {
+            fn rem(self, other: Self) -> Self {
                 Self(self.0 % other.0)
             }
         }
 
         impl #impl_generics core::ops::RemAssign for #struct_name #type_generics #where_clause {
-            fn rem_assign(&mut self, other: &Self) {
+            fn rem_assign(&mut self, other: Self) {
                 self.0 = self.0 % other.0
             }
         }
