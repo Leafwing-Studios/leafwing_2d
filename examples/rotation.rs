@@ -10,7 +10,7 @@ use leafwing_2d::prelude::*;
 use leafwing_2d::orientation::Direction;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
-const PLAY_AREA: AxisAlignedBoundingBox<f32> =
+const PLAY_AREA: AxisAlignedBoundingBox<F32> =
     AxisAlignedBoundingBox::new(-600.0, -320.0, 600.0, 320.0);
 
 const BOUNDS: Vec2 = const_vec2!([1200.0, 640.0]);
@@ -77,7 +77,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: ship_handle,
             ..Default::default()
         })
-        .insert(Position::<f32>::default())
+        .insert(Position::<F32>::default())
         .insert(Rotation::default())
         .insert(Player {
             movement_speed: 500.0,                  // metres per second
@@ -90,7 +90,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: enemy_a_handle.clone(),
             ..Default::default()
         })
-        .insert(Position::<f32>::new(-horizontal_margin, 0.0))
+        .insert(Position::<F32>::new(-horizontal_margin, 0.0))
         .insert(Rotation::default())
         .insert(SnapToPlayer);
 
@@ -99,7 +99,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: enemy_a_handle,
             ..Default::default()
         })
-        .insert(Position::<f32>::new(0.0, -vertical_margin))
+        .insert(Position::<F32>::new(0.0, -vertical_margin))
         .insert(Rotation::default())
         .insert(SnapToPlayer);
 
@@ -109,7 +109,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: enemy_b_handle.clone(),
             ..Default::default()
         })
-        .insert(Position::<f32>::new(horizontal_margin, 0.0))
+        .insert(Position::<F32>::new(horizontal_margin, 0.0))
         .insert(Rotation::default())
         .insert(RotateToPlayer {
             rotation_speed: f32::to_radians(45.0), // degrees per second
@@ -165,9 +165,7 @@ fn player_movement_system(
     // create the change in translation using the new movement direction and distance
     let translation_delta = direction * movement_distance;
     // update the ship translation with our new translation delta
-    *position += translation_delta
-        .try_into()
-        .expect("This conversion is infallible for `Position<f32>`.");
+    *position += translation_delta.into();
 
     // bound the ship within the invisible level bounds
     *position = PLAY_AREA.clamp(*position);
@@ -175,8 +173,8 @@ fn player_movement_system(
 
 /// Demonstrates snapping the enemy ship to face the player ship immediately.
 fn snap_to_player_system(
-    mut query: Query<(&mut Rotation, &Position<f32>), (With<SnapToPlayer>, Without<Player>)>,
-    player_query: Query<&Position<f32>, With<Player>>,
+    mut query: Query<(&mut Rotation, &Position<F32>), (With<SnapToPlayer>, Without<Player>)>,
+    player_query: Query<&Position<F32>, With<Player>>,
 ) {
     let &player_position = player_query.single();
 
@@ -190,8 +188,8 @@ fn snap_to_player_system(
 ///
 /// This system simply uses the `rotation_to` and `rotate_towards` methods to perform the required computations.
 fn rotate_to_player_system(
-    mut query: Query<(&RotateToPlayer, &mut Rotation, &Position<f32>), Without<Player>>,
-    player_query: Query<&Position<f32>, With<Player>>,
+    mut query: Query<(&RotateToPlayer, &mut Rotation, &Position<F32>), Without<Player>>,
+    player_query: Query<&Position<F32>, With<Player>>,
 ) {
     let &player_position = player_query.single();
 

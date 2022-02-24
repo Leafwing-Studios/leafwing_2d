@@ -31,7 +31,7 @@ struct PlayerBundle {
     #[bundle]
     sprite: SpriteBundle,
     #[bundle]
-    two_d: TwoDBundle<f32>,
+    two_d: TwoDBundle<F32>,
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {

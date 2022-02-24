@@ -157,7 +157,7 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[inline]
     #[must_use]
     /// Creates a new AABB from the coordinate values of its sides
-    pub const fn new(left: C, right: C, bottom: C, top: C) -> Self {
+    pub fn new(left: C, right: C, bottom: C, top: C) -> Self {
         Self {
             left,
             right,
@@ -169,11 +169,11 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[inline]
     #[must_use]
     /// Creates a new AABB from a central `Postion` plus a `width` and `height`
-    pub const fn from_size(position: Position<C>, width: C, height: C) -> Self {
-        let left = position.x - width / 2.;
-        let right = position.x + width / 2.;
-        let bottom = position.y - height / 2;
-        let top = position.y + height / 2;
+    pub fn from_size(position: Position<C>, half_width: C, half_height: C) -> Self {
+        let left = position.x - half_width;
+        let right = position.x + half_width;
+        let bottom = position.y - half_height;
+        let top = position.y + half_height;
 
         Self {
             left,
@@ -186,7 +186,7 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     /// Gets the bottom left [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn bottom_left(&self) -> Position<C> {
+    pub fn bottom_left(&self) -> Position<C> {
         Position {
             x: self.left,
             y: self.bottom,
@@ -196,7 +196,7 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     /// Gets the bottom right [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn bottom_right(&self) -> Position<C> {
+    pub fn bottom_right(&self) -> Position<C> {
         Position {
             x: self.top,
             y: self.bottom,
@@ -206,7 +206,7 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     /// Gets the top left [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn top_left(&self) -> Position<C> {
+    pub fn top_left(&self) -> Position<C> {
         Position {
             x: self.left,
             y: self.right,
@@ -216,7 +216,7 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     /// Gets the top right [`Position`] of this bounding box
     #[inline]
     #[must_use]
-    pub const fn top_right(&self) -> Position<C> {
+    pub fn top_right(&self) -> Position<C> {
         Position {
             x: self.top,
             y: self.right,

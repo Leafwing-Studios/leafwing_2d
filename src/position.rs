@@ -117,12 +117,14 @@ mod coordinate {
     ///
     /// # Conversion
     ///
-    /// Each [`Coordinate`] type stores its own [`Coordinate::COORD_TO_TRANSFORM`] ratio,
-    /// which is used to convert to and from [`Transform`](bevy_transform::components::Transform) correctly.
-    /// When converting to and from [`Transform`](bevy_transform::components::Transform),
-    /// [`GlobalTransform`](bevy_transform::components::GlobalTransform), [`Vec2`](bevy_math::Vec2) and [`Vec3`](bevy_math::Vec3),
-    /// the values stored in your [`Coordinate`] component will be scaled appropriately to take advantage of the range
-    /// of allowable transforms while ensuring that both conversions directions are infallible.
+    /// The conversion between [`Coordinate`] types and [`f32`]
+    /// (as might be used in [`Transform`](bevy_transform::components::Transform)) is commonly scaled.
+    ///
+    /// For discrete coordinates, this ensures that all distinct values are representable,
+    /// even as the precision of the [`f32`] decreases.
+    /// To account for this, write custom [`From<f32>`] and [`Into<f32>`] impls for your coordinate type.
+    /// Remember to multiply by [`Coordinate::COORD_TO_TRANSFORM`] when converting into [`f32`],
+    /// and divide by it when converting back!
     pub trait Coordinate:
         Copy
         + Debug
@@ -140,12 +142,53 @@ mod coordinate {
         + PartialOrd
         + Send
         + Sync
-        + Into<f32>
         + From<f32>
+        + Into<f32>
         + 'static
     {
         /// The ratio between 1 unit in this coordinate system to 1 unit of [`Transform.translation`](bevy_transform::components::Transform)
         const COORD_TO_TRANSFORM: f32;
+
+        /// The minimum representable value
+        const MIN: Self;
+
+        /// The maximum representable value
+        const MAX: Self;
+
+        /// Checks that [`Coordinate::MIN`] and [`Coordinate::MAX`] can be converted to and from `f32` in a reasonable fashion
+        ///
+        /// This should not panic, and the min value should be less than the max in both forms.
+        fn assert_bounds_okay(&self) {
+            assert!(Self::MIN < Self::MAX);
+
+            let float_min: f32 = Self::MIN.into();
+            let float_max: f32 = Self::MAX.into();
+
+            assert!(float_min < float_max);
+        }
+
+        /// Computes the signed round-trip error of converting from an [`f32`] to the [`Coordinate`] type and back again
+        ///
+        /// The difference is computed as `final - initial`.
+        #[must_use]
+        fn round_trip_float_error(float: f32) -> f32 {
+            let coordinate: Self = float.into();
+            let round_trip_float: f32 = coordinate.into();
+
+            round_trip_float - float
+        }
+
+        /// Computes the signed round-trip error of converting from the [`Coordinate`] type to an [`f32] and back again
+        ///
+        /// The difference is computed as `final - initial`.
+        /// For [`DiscreteCoordinates`](crate::discrete::DiscreteCoordinate), this should be 0 for all values across the range.
+        #[must_use]
+        fn round_trip_coordinate_error(self) -> Self {
+            let float: f32 = self.into();
+            let round_trip_coordinate: Self = float.into();
+
+            round_trip_coordinate - self
+        }
     }
 
     /// A helper trait for [`Coordinate`] types that simply wrap a single number-like value
@@ -194,7 +237,10 @@ mod coordinate {
     /// let position: Position<TrivialCoordinate> = Position::new(0,0);
     /// ```
     pub trait TrivialCoordinate {
+        /// The underlying number-like type that is wrapped
         type Wrapped;
+
+        /// The underlying value stored
         fn value(&self) -> Self::Wrapped;
     }
 }
@@ -336,54 +382,14 @@ mod conversions {
     use bevy_math::{Quat, Vec2, Vec3};
     use bevy_transform::components::{GlobalTransform, Transform};
 
+    // Transform-like to Coordinate
+
     impl<C: Coordinate> From<Vec2> for Position<C> {
         fn from(vec: Vec2) -> Position<C> {
             let x = C::from(vec.x);
             let y = C::from(vec.y);
 
             Position { x, y }
-        }
-    }
-
-    impl<C: Coordinate> From<Position<C>> for Vec2 {
-        fn from(position: Position<C>) -> Vec2 {
-            Vec2::new(position.x.into(), position.y.into())
-        }
-    }
-
-    impl<C: Coordinate> From<Position<C>> for Vec3 {
-        fn from(position: Position<C>) -> Vec3 {
-            Vec3::new(position.x.into(), position.y.into(), 0.0)
-        }
-    }
-
-    impl<C: Coordinate> TryFrom<Position<C>> for Direction {
-        type Error = NearlySingularConversion;
-
-        fn try_from(position: Position<C>) -> Result<Direction, NearlySingularConversion> {
-            let vec2: Vec2 = position.into();
-
-            vec2.try_into()
-        }
-    }
-
-    impl<C: Coordinate> TryFrom<Position<C>> for Rotation {
-        type Error = NearlySingularConversion;
-
-        fn try_from(position: Position<C>) -> Result<Rotation, NearlySingularConversion> {
-            let vec2: Vec2 = position.into();
-
-            vec2.try_into()
-        }
-    }
-
-    impl<C: Coordinate> TryFrom<Position<C>> for Quat {
-        type Error = NearlySingularConversion;
-
-        fn try_from(position: Position<C>) -> Result<Quat, NearlySingularConversion> {
-            let direction: Direction = position.try_into()?;
-
-            Ok(direction.into())
         }
     }
 
@@ -411,6 +417,78 @@ mod conversions {
             let y = C::from(transform.translation.y);
 
             Position { x, y }
+        }
+    }
+
+    // Coordinate to Transform-like
+
+    impl<C: Coordinate> From<Position<C>> for Vec2 {
+        fn from(position: Position<C>) -> Vec2 {
+            let x = position.x.into();
+            let y = position.y.into();
+
+            Vec2::new(x, y)
+        }
+    }
+
+    impl<C: Coordinate> From<Position<C>> for Vec3 {
+        fn from(position: Position<C>) -> Vec3 {
+            let x = position.x.into();
+            let y = position.y.into();
+
+            Vec3::new(x, y, 0.0)
+        }
+    }
+
+    impl<C: Coordinate> From<Position<C>> for Transform {
+        fn from(position: Position<C>) -> Transform {
+            let x = position.x.into();
+            let y = position.y.into();
+
+            Transform::from_xyz(x, y, 0.0)
+        }
+    }
+
+    impl<C: Coordinate> From<Position<C>> for GlobalTransform {
+        fn from(position: Position<C>) -> GlobalTransform {
+            let x = position.x.into();
+            let y = position.y.into();
+
+            GlobalTransform::from_xyz(x, y, 0.0)
+        }
+    }
+
+    // Orientations
+
+    impl<C: Coordinate> TryFrom<Position<C>> for Direction {
+        type Error = NearlySingularConversion;
+
+        fn try_from(position: Position<C>) -> Result<Direction, NearlySingularConversion> {
+            // We can bypass scaling here, since the magnitude is normalized anyways
+            let vec2: Vec2 = Vec2::new(position.x.into(), position.y.into());
+
+            vec2.try_into()
+        }
+    }
+
+    impl<C: Coordinate> TryFrom<Position<C>> for Rotation {
+        type Error = NearlySingularConversion;
+
+        fn try_from(position: Position<C>) -> Result<Rotation, NearlySingularConversion> {
+            // We can bypass scaling here, since the magnitude is normalized anyways
+            let vec2: Vec2 = Vec2::new(position.x.into(), position.y.into());
+
+            vec2.try_into()
+        }
+    }
+
+    impl<C: Coordinate> TryFrom<Position<C>> for Quat {
+        type Error = NearlySingularConversion;
+
+        fn try_from(position: Position<C>) -> Result<Quat, NearlySingularConversion> {
+            let direction: Direction = position.try_into()?;
+
+            Ok(direction.into())
         }
     }
 }

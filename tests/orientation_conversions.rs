@@ -1,4 +1,5 @@
 use bevy::math::Quat;
+use leafwing_2d::continuous::F32;
 use leafwing_2d::orientation::*;
 use leafwing_2d::position::Position;
 
@@ -17,7 +18,7 @@ fn rotation_wrapping() {
 
 #[test]
 fn orientation_alignment() {
-    let due_north: Position<f32> = Position::new(0.0, 1.0);
+    let due_north: Position<F32> = Position::new(0.0, 1.0);
     let origin = Position::default();
 
     let rotation: Rotation = origin.orientation_to(due_north).unwrap();
@@ -113,10 +114,10 @@ fn direction_rotation_conversion() {
     Direction::NORTH.assert_approx_eq(Direction::from(Rotation::new(3600)));
 }
 
-fn assert_conversions_match(target_position: Position<f32>) {
+fn assert_conversions_match(target_position: Position<F32>) {
     dbg!(target_position);
 
-    let origin = Position::<f32>::default();
+    let origin = Position::<F32>::default();
 
     let direction: Direction = origin.orientation_to(target_position).unwrap();
     let rotation: Rotation = origin.orientation_to(target_position).unwrap();
