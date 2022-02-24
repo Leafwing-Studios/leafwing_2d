@@ -5,8 +5,10 @@
 //! please feel free to copy-paste the relevant struct def and trait impls into your game
 //! and modify `isize` to your desired integer type.
 use crate::orientation::Direction;
-use crate::partitioning::DirectionParitioning;
-use crate::position::{Coordinate, Position};
+use crate::partitioning::{CardinalQuadrant, DirectionParitioning};
+use crate::position::{Coordinate, Position, TrivialCoordinate};
+
+use crate as leafwing_2d;
 
 /// A type that can be used to represent a discrete 2-dimensional coordinate
 ///
@@ -76,14 +78,46 @@ pub trait DiscreteCoordinate: Coordinate {
 /// [`DiscreteCoordinate`] primitive for a square grid, where each cell has four neighbors
 ///
 /// Neighboring tiles must touch on their faces
+#[derive(TrivialCoordinate)]
 pub struct OrthogonalGrid(pub isize);
 
-/*
-impl DiscreteCoordinate for OrthogonalGrid {
-    const N_NEIGHBORS: usize = 4;
-    const ZERO: OrthogonalGrid = OrthogonalGrid(0);
-    type Parititions = CardinalQuadrant;
+impl From<OrthogonalGrid> for f32 {
+    fn from(coordinate: OrthogonalGrid) -> f32 {
+        coordinate.0 as f32
+    }
+}
 
+impl From<f32> for OrthogonalGrid {
+    fn from(float: f32) -> OrthogonalGrid {
+        OrthogonalGrid(float.round() as isize)
+    }
+}
+
+impl Coordinate for OrthogonalGrid {
+    const COORD_TO_TRANSFORM: f32 = 1.;
+    const ZERO: OrthogonalGrid = OrthogonalGrid(0);
+    const MIN: OrthogonalGrid = OrthogonalGrid(isize::MIN);
+    const MAX: OrthogonalGrid = OrthogonalGrid(isize::MAX);
+}
+
+impl DiscreteCoordinate for OrthogonalGrid {
+    type Parititions = CardinalQuadrant;
+    const N_NEIGHBORS: usize = 4;
+
+    #[inline]
+    #[must_use]
+    fn next(&self) -> Self {
+        Self(self.0 + 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn prev(&self) -> Self {
+        Self(self.0 - 1)
+    }
+
+    #[inline]
+    #[must_use]
     fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
         [
             Position {
@@ -105,31 +139,250 @@ impl DiscreteCoordinate for OrthogonalGrid {
         ]
     }
 }
-*/
-
-impl From<OrthogonalGrid> for f32 {
-    fn from(coordinate: OrthogonalGrid) -> f32 {
-        coordinate.0 as f32
-    }
-}
-
-impl From<f32> for OrthogonalGrid {
-    fn from(float: f32) -> OrthogonalGrid {
-        OrthogonalGrid(float.round() as isize)
-    }
-}
 
 /// [`DiscreteCoordinate`] primitive for a square grid, where each cell has eight neighbors
 ///
 /// Neighboring tiles are a king's move away: either touching faces or diagonally adjacent
+#[derive(TrivialCoordinate)]
 pub struct AdjacentGrid(pub isize);
+
+impl From<AdjacentGrid> for f32 {
+    fn from(coordinate: AdjacentGrid) -> f32 {
+        coordinate.0 as f32
+    }
+}
+
+impl From<f32> for AdjacentGrid {
+    fn from(float: f32) -> AdjacentGrid {
+        AdjacentGrid(float.round() as isize)
+    }
+}
+
+impl Coordinate for AdjacentGrid {
+    const COORD_TO_TRANSFORM: f32 = 1.;
+    const ZERO: AdjacentGrid = AdjacentGrid(0);
+    const MIN: AdjacentGrid = AdjacentGrid(isize::MIN);
+    const MAX: AdjacentGrid = AdjacentGrid(isize::MAX);
+}
+
+impl DiscreteCoordinate for AdjacentGrid {
+    type Parititions = CardinalQuadrant;
+    const N_NEIGHBORS: usize = 8;
+
+    #[inline]
+    #[must_use]
+    fn next(&self) -> Self {
+        Self(self.0 + 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn prev(&self) -> Self {
+        Self(self.0 - 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
+        [
+            // N
+            Position {
+                x: Self(position.x.0),
+                y: Self(position.y.0 + 1),
+            },
+            // NE
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0 + 1),
+            },
+            // E
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0),
+            },
+            // SE
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0 - 1),
+            },
+            // S
+            Position {
+                x: Self(position.x.0),
+                y: Self(position.y.0 - 1),
+            },
+            // SW
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0 - 1),
+            },
+            // W
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0),
+            },
+            // NW
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0 + 1),
+            },
+        ]
+    }
+}
 
 /// [`DiscreteCoordinate`] primitive for a hexagonal grid, where each cell points sideways
 ///
 /// These hexes tile vertically, but not horizontally
+#[derive(TrivialCoordinate)]
 pub struct FlatHex(pub isize);
+
+impl From<FlatHex> for f32 {
+    fn from(coordinate: FlatHex) -> f32 {
+        coordinate.0 as f32
+    }
+}
+
+impl From<f32> for FlatHex {
+    fn from(float: f32) -> FlatHex {
+        FlatHex(float.round() as isize)
+    }
+}
+
+impl Coordinate for FlatHex {
+    const COORD_TO_TRANSFORM: f32 = 1.;
+    const ZERO: FlatHex = FlatHex(0);
+    const MIN: FlatHex = FlatHex(isize::MIN);
+    const MAX: FlatHex = FlatHex(isize::MAX);
+}
+
+impl DiscreteCoordinate for FlatHex {
+    type Parititions = CardinalQuadrant;
+    const N_NEIGHBORS: usize = 6;
+
+    #[inline]
+    #[must_use]
+    fn next(&self) -> Self {
+        Self(self.0 + 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn prev(&self) -> Self {
+        Self(self.0 - 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
+        [
+            // N
+            Position {
+                x: Self(position.x.0),
+                y: Self(position.y.0 + 1),
+            },
+            // NE
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0 + 1),
+            },
+            // SE
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0 - 1),
+            },
+            // S
+            Position {
+                x: Self(position.x.0),
+                y: Self(position.y.0 - 1),
+            },
+            // SW
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0 - 1),
+            },
+            // NW
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0 + 1),
+            },
+        ]
+    }
+}
 
 /// [`DiscreteCoordinate`] primitive for a hexagonal grid, where each cell points up
 ///
 /// These hexes tile horizontally, but not vertically
+#[derive(TrivialCoordinate)]
 pub struct PointyHex(pub isize);
+
+impl From<PointyHex> for f32 {
+    fn from(coordinate: PointyHex) -> f32 {
+        coordinate.0 as f32
+    }
+}
+
+impl From<f32> for PointyHex {
+    fn from(float: f32) -> PointyHex {
+        PointyHex(float.round() as isize)
+    }
+}
+
+impl Coordinate for PointyHex {
+    const COORD_TO_TRANSFORM: f32 = 1.;
+    const ZERO: PointyHex = PointyHex(0);
+    const MIN: PointyHex = PointyHex(isize::MIN);
+    const MAX: PointyHex = PointyHex(isize::MAX);
+}
+
+impl DiscreteCoordinate for PointyHex {
+    type Parititions = CardinalQuadrant;
+    const N_NEIGHBORS: usize = 6;
+
+    #[inline]
+    #[must_use]
+    fn next(&self) -> Self {
+        Self(self.0 + 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn prev(&self) -> Self {
+        Self(self.0 - 1)
+    }
+
+    #[inline]
+    #[must_use]
+    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
+        [
+            // NE
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0 + 1),
+            },
+            // E
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0),
+            },
+            // SE
+            Position {
+                x: Self(position.x.0 + 1),
+                y: Self(position.y.0 - 1),
+            },
+            // SW
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0 - 1),
+            },
+            // W
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0),
+            },
+            // NW
+            Position {
+                x: Self(position.x.0 - 1),
+                y: Self(position.y.0 + 1),
+            },
+        ]
+    }
+}
