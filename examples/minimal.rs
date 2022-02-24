@@ -72,6 +72,7 @@ fn accelerate_player(
     }
 }
 
+// FIXME: very broken wow
 fn drag(mut query: Query<(&Velocity<F32>, &mut Acceleration<F32>)>, time: Res<Time>) {
     const DRAG_COEFFICIENT: f32 = 0.2;
 
