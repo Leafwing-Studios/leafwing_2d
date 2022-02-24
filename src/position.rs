@@ -250,7 +250,7 @@ mod coordinate {
     /// ```
     pub trait TrivialCoordinate {
         /// The underlying number-like type that is wrapped
-        type Wrapped;
+        type Wrapped: Clone + Copy + Debug + Add + Sub + Mul + Div + Rem + Default;
 
         /// The underlying value stored
         fn value(&self) -> Self::Wrapped;
