@@ -17,6 +17,7 @@ fn main() {
         .add_system(move_towards_click)
         // Or, we can use the included kinematics to work in terms of velocity and acceleration
         .add_system(accelerate_player)
+        .add_system(drag)
         // Use an AABB to ensure the player doesn't go out of bounds
         .add_system(bound_player)
         .run();
@@ -71,6 +72,25 @@ fn accelerate_player(
     }
 }
 
+fn drag(mut query: Query<(&Velocity<F32>, &mut Acceleration<F32>)>, time: Res<Time>) {
+    const DRAG_COEFFICIENT: f32 = 0.2;
+
+    for (velocity, mut acceleration) in query.iter_mut() {
+        // Drag has no effect on objects that aren't moving
+        if let Some(velocity_direction) = velocity.direction() {
+            *acceleration += Acceleration::new(
+                // Standard formula for drag under turbulent conditions
+                DRAG_COEFFICIENT
+                    * velocity.magnitude()
+                    * velocity.magnitude()
+                    * time.delta_seconds(),
+                -velocity_direction,
+            );
+        }
+    }
+}
+
+// FIXME: does not bound correctly
 fn bound_player(mut query: Query<&mut Transform, With<Player>>, windows: Res<Windows>) {
     let mut player_transform = query.single_mut();
 
