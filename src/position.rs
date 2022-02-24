@@ -1,6 +1,8 @@
 //! 2-dimensional coordinates
 
+// Re-exporting the derive macro
 pub use coordinate::{Coordinate, TrivialCoordinate};
+pub use leafwing_2d_macros::TrivialCoordinate;
 pub use position_struct::Position;
 pub use positionlike::Positionlike;
 

@@ -24,6 +24,11 @@ bevy_math = { version = "0.6", default-features = false}
 bevy_transform = { version = "0.6", default-features = false}
 bevy_core = {version = "0.6", default-features = false}
 derive_more = "0.99"
+leafwing_2d_macros = "0.1"
 
 [dev-dependencies]
 bevy = "0.6"
+
+[patch.crates-io]
+# Use for local development
+leafwing_2d_macros = {path = "./macros"}
