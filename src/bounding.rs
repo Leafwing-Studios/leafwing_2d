@@ -34,6 +34,12 @@ pub enum Intersects {
 
 /// A 2-dimensional axis-aligned bounding box with coordinate type C
 ///
+/// # Warning
+/// When constructing this type, ensure that `left` <= `right`,
+/// and `bottom` <= `top`.
+/// Prefer the `new` method when possible (i.e., in non-const contexts)
+/// for better ergonomics and checks.
+///
 /// # Examples
 /// ```rust
 /// use leafwing_2d::bounding::{AxisAlignedBoundingBox, BoundingRegion};
@@ -157,30 +163,39 @@ impl<C: Coordinate> AxisAlignedBoundingBox<C> {
     #[inline]
     #[must_use]
     /// Creates a new AABB from the coordinate values of its sides
-    pub fn new(
-        left: impl Into<C>,
-        right: impl Into<C>,
-        bottom: impl Into<C>,
-        top: impl Into<C>,
-    ) -> Self {
+    ///
+    /// # Panics
+    /// `left` must be less than or equal to `right`.
+    /// `bottom` must be less than or equal to `top`.
+    pub fn new<T: Into<C>>(left: T, right: T, bottom: T, top: T) -> Self {
+        let left = left.into();
+        let right = right.into();
+        let top = top.into();
+        let bottom = bottom.into();
+
+        assert!(left <= right);
+        assert!(bottom <= top);
+
         Self {
-            left: left.into(),
-            right: right.into(),
-            bottom: bottom.into(),
-            top: top.into(),
+            left,
+            right,
+            bottom,
+            top,
         }
     }
 
     #[inline]
     #[must_use]
     /// Creates a new AABB from a central `Postion` plus a `width` and `height`
-    pub fn from_size(
-        position: Position<C>,
-        half_width: impl Into<C>,
-        half_height: impl Into<C>,
-    ) -> Self {
+    ///
+    /// # Panics
+    /// `half_width` and `half_height` must be greater than or equal to [`Coordinate::ZERO`].
+    pub fn from_size<T: Into<C>>(position: Position<C>, half_width: T, half_height: T) -> Self {
         let half_width = half_width.into();
         let half_height = half_height.into();
+
+        assert!(half_width >= C::ZERO);
+        assert!(half_height >= C::ZERO);
 
         let left = position.x - half_width;
         let right = position.x + half_width;

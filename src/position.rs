@@ -52,7 +52,7 @@ mod position_struct {
         /// Creates a new [`Position`] with the provided `x` and `y` coordinates
         #[inline]
         #[must_use]
-        pub fn new(x: impl Into<C>, y: impl Into<C>) -> Position<C> {
+        pub fn new<T: Into<C>>(x: T, y: T) -> Position<C> {
             Position {
                 x: x.into(),
                 y: y.into(),

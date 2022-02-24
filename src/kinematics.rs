@@ -67,7 +67,7 @@ mod kinematic_trait {
         type D: PartialEq;
 
         /// Creates a new vector, defined by its `magnitude` and `direction`
-        fn new(magnitude: impl Into<Self::M>, direction: impl Into<Self::D>) -> Self;
+        fn new<IM: Into<Self::M>, ID: Into<Self::D>>(magnitude: IM, direction: ID) -> Self;
 
         /// The strength (or length) of this vector
         fn magnitude(&self) -> Self::M;
@@ -85,7 +85,7 @@ mod kinematic_trait {
         type M = C;
         type D = Direction;
 
-        fn new(magnitude: impl Into<C>, direction: impl Into<Direction>) -> Self {
+        fn new<IM: Into<Self::M>, ID: Into<Self::D>>(magnitude: IM, direction: ID) -> Self {
             let coordinate: C = magnitude.into();
             let magnitude: f32 = coordinate.into();
             let direction = direction.into();
@@ -123,7 +123,7 @@ mod kinematic_trait {
         type M = C;
         type D = Direction;
 
-        fn new(magnitude: impl Into<C>, direction: impl Into<Direction>) -> Self {
+        fn new<IM: Into<Self::M>, ID: Into<Self::D>>(magnitude: IM, direction: ID) -> Self {
             let coordinate: C = magnitude.into();
             let magnitude: f32 = coordinate.into();
             let direction = direction.into();
@@ -162,7 +162,7 @@ mod kinematic_trait {
         type M = isize;
         type D = RotationDirection;
 
-        fn new(magnitude: impl Into<isize>, direction: impl Into<RotationDirection>) -> Self {
+        fn new<IM: Into<Self::M>, ID: Into<Self::D>>(magnitude: IM, direction: ID) -> Self {
             let magnitude: isize = magnitude.into();
             let direction: RotationDirection = direction.into();
 
@@ -195,7 +195,7 @@ mod kinematic_trait {
         type M = isize;
         type D = RotationDirection;
 
-        fn new(magnitude: impl Into<isize>, direction: impl Into<RotationDirection>) -> Self {
+        fn new<IM: Into<Self::M>, ID: Into<Self::D>>(magnitude: IM, direction: ID) -> Self {
             let magnitude: isize = magnitude.into();
             let direction: RotationDirection = direction.into();
 
