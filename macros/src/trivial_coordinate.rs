@@ -6,7 +6,7 @@ use syn::{Data, DeriveInput, Ident};
 
 pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
     // Splitting the abstract syntax tree
-    let enum_name = &ast.ident;
+    let struct_name = &ast.ident;
     let (impl_generics, type_generics, where_clause) = &ast.generics.split_for_impl();
 
     let crate_path = if let Ok(found_crate) = crate_name("leafwing_2d") {
@@ -30,79 +30,41 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         quote!(leafwing_2d)
     };
 
-    let variants = match &ast.data {
-        Data::Enum(v) => &v.variants,
-        _ => panic!("`Actionlike` cannot be derived for non-enum types. Manually implement the trait instead."),
+    // Fetch the wrapped field
+    let data_struct = match &ast.data {
+        Data::Struct(data_struct) => data_struct,
+        _ => panic!("TrivialCoordinate can only be derived for struct types."),
     };
 
-    // Populate the array
-    let mut get_at_match_items = Vec::new();
-    let mut index_match_items = Vec::new();
+    // The first field is used as the wrapped type; all others are ignored.
+    let wrapped_field = data_struct
+        .fields
+        .iter()
+        .next()
+        .expect("At least one field must be provided.");
 
-    for (index, variant) in variants.iter().enumerate() {
-        // The name of the enum variant
-        let variant_identifier = variant.ident.clone();
+    let wrapped_type = &wrapped_field.ty;
 
-        let get_at_params = match &variant.fields {
-            // Unit fields have no parameters
-            syn::Fields::Unit => quote! {},
-            // Use the default values for tuple-like fields
-            syn::Fields::Unnamed(fields) => {
-                let defaults = ::std::iter::repeat(quote!(::core::default::Default::default()))
-                    .take(fields.unnamed.len());
-                quote! { (#(#defaults),*) }
-            }
-            // Use the default values for tuple-like fields
-            syn::Fields::Named(fields) => {
-                let fields = fields
-                    .named
-                    .iter()
-                    .map(|field| field.ident.as_ref().unwrap());
-                quote! { {#(#fields: ::core::default::Default::default()),*} }
-            }
-        };
+    // Populate the `TrivialCoordinate` trait
+    // For named structs
+    if let Some(field_name) = &wrapped_field.ident {
+        quote! {
+            impl #impl_generics #crate_path::TrivialCoordinate for #struct_name #type_generics #where_clause {
+                type Wrapped = #wrapped_type;
 
-        let index_params = match &variant.fields {
-            // Unit fields have no parameters
-            syn::Fields::Unit => quote! {},
-            // Use the default values for tuple-like fields
-            syn::Fields::Unnamed(fields) => {
-                let underscores = ::std::iter::repeat(quote!(_)).take(fields.unnamed.len());
-                quote! { (#(#underscores),*) }
-            }
-            // Use the default values for tuple-like fields
-            syn::Fields::Named(fields) => {
-                let fields = fields
-                    .named
-                    .iter()
-                    .map(|field| field.ident.as_ref().unwrap());
-                quote! { {#(#fields: _),*} }
-            }
-        };
-
-        // Match items
-        get_at_match_items.push(quote! {
-            #index => Some(#enum_name::#variant_identifier #get_at_params),
-        });
-
-        index_match_items.push(quote! {
-            #enum_name::#variant_identifier #index_params => #index,
-        });
-    }
-
-    quote! {
-        impl #impl_generics #crate_path::Actionlike for #enum_name #type_generics #where_clause {
-            fn get_at(index: usize) -> Option<Self> {
-                match index {
-                    #(#get_at_match_items)*
-                    _ => None,
+                fn value(&self) -> Self::Wrapped {
+                    self.#field_name
                 }
             }
+        }
+    // For unnamed (tuple) structs
+    } else {
+        quote! {
+            impl #impl_generics #crate_path::TrivialCoordinate for #struct_name #type_generics #where_clause {
+                type Wrapped = #wrapped_type;
 
-            fn index(&self) -> usize {
-                match self {
-                    #(#index_match_items)*
-                    _ => unreachable!()
+                fn value(&self) -> Self::Wrapped {
+                    self.0
                 }
             }
         }
