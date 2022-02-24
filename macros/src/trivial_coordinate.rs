@@ -65,10 +65,10 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
             }
         }
 
-        // Default
+        // Debug
         impl #impl_generics std::fmt::Debug for #struct_name #type_generics #where_clause {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error>{
-                f.debug_struct(#struct_name)
+                f.debug_struct(stringify!(#struct_name))
                     .field("0", &self.0)
                     .finish()
             }
