@@ -194,6 +194,7 @@ pub fn sync_direction_and_rotation(mut query: Query<(&mut Direction, &mut Rotati
 ///
 /// z-values of the [`Transform`] translation will not be modified.
 /// Any off-axis rotation of the [`Transform`]'s rotation quaternion will be lost.
+// FIXME: also sync `Scale`.
 pub fn sync_transform_with_2d<C: Coordinate>(
     mut query: Query<
         (
