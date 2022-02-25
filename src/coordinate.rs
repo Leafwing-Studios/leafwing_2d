@@ -44,8 +44,13 @@ pub trait Coordinate:
     + Sync
     + From<f32>
     + Into<f32>
+    + From<Self::Data>
+    + Into<Self::Data>
     + 'static
 {
+    /// The underlying numeric storage type (e.g. `f32`, `i8` or so on)
+    type Data;
+
     /// The ratio between 1 unit in this coordinate system to 1 unit of [`Transform.translation`](bevy_transform::components::Transform)
     const COORD_TO_TRANSFORM: f32;
 
@@ -145,10 +150,20 @@ pub trait Coordinate:
 /// // Congratulations: it's a `Coordinate`!
 /// let position: Position<TrivialCoordinate> = Position::new(0,0);
 /// ```
-pub trait TrivialCoordinate {
+pub trait TrivialCoordinate: Sized {
     /// The underlying number-like type that is wrapped
+    ///
+    /// This should match [`Coordinate::Data`].
     type Wrapped: Clone + Copy + Debug + Add + Sub + Mul + Div + Rem + Default;
+
+    /// Creates a new coodinate with the underlying `value`;
+    fn new(value: Self::Wrapped) -> Self;
 
     /// The underlying value stored
     fn value(&self) -> Self::Wrapped;
+
+    /// Set this coordinate to `value`
+    fn set(&mut self, value: Self::Wrapped) {
+        *self = Self::new(value);
+    }
 }

@@ -95,6 +95,8 @@ impl From<f32> for OrthogonalGrid {
 }
 
 impl Coordinate for OrthogonalGrid {
+    type Data = isize;
+
     const COORD_TO_TRANSFORM: f32 = 1.;
     const ZERO: OrthogonalGrid = OrthogonalGrid(0);
     const MIN: OrthogonalGrid = OrthogonalGrid(isize::MIN);
@@ -160,6 +162,8 @@ impl From<f32> for AdjacentGrid {
 }
 
 impl Coordinate for AdjacentGrid {
+    type Data = isize;
+
     const COORD_TO_TRANSFORM: f32 = 1.;
     const ZERO: AdjacentGrid = AdjacentGrid(0);
     const MIN: AdjacentGrid = AdjacentGrid(isize::MIN);
@@ -249,6 +253,8 @@ impl From<f32> for FlatHex {
 }
 
 impl Coordinate for FlatHex {
+    type Data = isize;
+
     const COORD_TO_TRANSFORM: f32 = 1.;
     const ZERO: FlatHex = FlatHex(0);
     const MIN: FlatHex = FlatHex(isize::MIN);
@@ -328,6 +334,8 @@ impl From<f32> for PointyHex {
 }
 
 impl Coordinate for PointyHex {
+    type Data = isize;
+
     const COORD_TO_TRANSFORM: f32 = 1.;
     const ZERO: PointyHex = PointyHex(0);
     const MIN: PointyHex = PointyHex(isize::MIN);

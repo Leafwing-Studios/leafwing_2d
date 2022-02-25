@@ -7,19 +7,9 @@ use crate::coordinate::{Coordinate, TrivialCoordinate};
 #[derive(TrivialCoordinate)]
 pub struct F32(pub f32);
 
-impl From<f32> for F32 {
-    fn from(float: f32) -> F32 {
-        F32(float)
-    }
-}
-
-impl From<F32> for f32 {
-    fn from(coordinate: F32) -> f32 {
-        coordinate.0
-    }
-}
-
 impl Coordinate for F32 {
+    type Data = f32;
+
     const COORD_TO_TRANSFORM: f32 = 1.0;
     const MIN: Self = F32(f32::MIN);
     const MAX: Self = F32(f32::MAX);
