@@ -1,7 +1,7 @@
 //! [`Coordinate`] types for [`Positions`](Position) designed for 2D games that move freely
 
 use crate as leafwing_2d;
-use crate::position::{Coordinate, TrivialCoordinate};
+use crate::coordinate::{Coordinate, TrivialCoordinate};
 
 /// A [`f32`]-backed [`Coordinate`]
 #[derive(TrivialCoordinate)]

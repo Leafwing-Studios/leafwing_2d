@@ -57,7 +57,7 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
 
     quote! {
         // Populate the `TrivialCoordinate` trait
-        impl #impl_generics #crate_path::position::TrivialCoordinate for #struct_name #type_generics #where_clause {
+        impl #impl_generics #crate_path::coordinate::TrivialCoordinate for #struct_name #type_generics #where_clause {
             type Wrapped = #wrapped_type;
 
             fn value(&self) -> Self::Wrapped {

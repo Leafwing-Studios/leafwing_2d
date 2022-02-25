@@ -1,6 +1,6 @@
 //! Tools for working with [`Velocity`], [`Acceleration`] and their [`Rotation`]-based equivalents
 
-use crate::position::Coordinate;
+use crate::coordinate::Coordinate;
 use bevy_ecs::component::Component;
 use derive_more::{Add, AddAssign, Sub, SubAssign};
 
@@ -54,8 +54,9 @@ pub struct AngularAcceleration {
 
 mod kinematic_trait {
     use super::*;
+    use crate::coordinate::Coordinate;
     use crate::orientation::{Direction, RotationDirection};
-    use crate::position::{Coordinate, Position};
+    use crate::position::Position;
     use core::ops::Mul;
     use std::time::Duration;
 
@@ -262,7 +263,7 @@ pub mod systems {
 
 mod mul_f32 {
     use super::*;
-    use crate::position::Coordinate;
+    use crate::coordinate::Coordinate;
     use std::ops::Mul;
 
     impl<C: Coordinate> Mul<f32> for Velocity<C> {
@@ -369,7 +370,7 @@ mod mul_f32 {
 mod mul_duration {
     use super::*;
     use crate::orientation::Rotation;
-    use crate::position::{Coordinate, Position};
+    use crate::position::Position;
     use std::ops::Mul;
     use std::time::Duration;
 

@@ -205,9 +205,10 @@ mod orientation_trait {
 }
 
 mod orientation_position_trait {
+    use crate::coordinate::Coordinate;
     use crate::errors::NearlySingularConversion;
     use crate::orientation::{Orientation, Rotation};
-    use crate::position::{Coordinate, Position};
+    use crate::position::Position;
 
     /// Tools that require both a [`Positions`](Position) and an [`Orientations`](Orientation)
     ///

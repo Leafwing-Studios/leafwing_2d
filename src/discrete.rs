@@ -4,9 +4,10 @@
 //! If you require a different storage type,
 //! please feel free to copy-paste the relevant struct def and trait impls into your game
 //! and modify `isize` to your desired integer type.
+use crate::coordinate::{Coordinate, TrivialCoordinate};
 use crate::orientation::Direction;
 use crate::partitioning::{CardinalQuadrant, DirectionParitioning};
-use crate::position::{Coordinate, Position, TrivialCoordinate};
+use crate::position::Position;
 
 use crate as leafwing_2d;
 

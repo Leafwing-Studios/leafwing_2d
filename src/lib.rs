@@ -7,6 +7,7 @@
 
 pub mod bounding;
 pub mod continuous;
+pub mod coordinate;
 pub mod discrete;
 pub mod errors;
 pub mod kinematics;
@@ -19,11 +20,12 @@ pub mod position;
 pub mod prelude {
     pub use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion};
     pub use crate::continuous::F32;
+    pub use crate::coordinate::Coordinate;
     pub use crate::discrete::DiscreteCoordinate;
     pub use crate::kinematics::{
         Acceleration, AngularAcceleration, AngularVelocity, Kinematic, Velocity,
     };
     pub use crate::orientation::{Direction, Orientation, OrientationPositionInterop, Rotation};
     pub use crate::plugin::{TwoDBundle, TwoDPlugin};
-    pub use crate::position::{Coordinate, Position, Positionlike};
+    pub use crate::position::{Position, Positionlike};
 }

@@ -1,10 +1,11 @@
 //! Tools for using two-dimensional coordinates within `bevy` games
 
 use crate::continuous::F32;
+use crate::coordinate::Coordinate;
 use crate::kinematics::systems::{angular_kinematics, linear_kinematics};
 use crate::kinematics::{Acceleration, AngularAcceleration, AngularVelocity, Velocity};
 use crate::orientation::{Direction, Rotation};
-use crate::position::{Coordinate, Position};
+use crate::position::Position;
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;

@@ -1,6 +1,7 @@
 //! Structs that bound regions that contain [`Positions`](crate::position::Position)
 
-use crate::position::{Coordinate, Position};
+use crate::coordinate::Coordinate;
+use crate::position::Position;
 use bevy_ecs::prelude::Component;
 
 /// A 2D region that could contain a [`Position`]
