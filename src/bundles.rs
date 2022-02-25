@@ -1,9 +1,12 @@
 //! [`Bundle`] Collections of components for creating
 
+use crate::bounding::AxisAlignedBoundingBox;
 use crate::coordinate::Coordinate;
 use crate::kinematics::{Acceleration, AngularAcceleration, AngularVelocity, Velocity};
 use crate::orientation::{Direction, Rotation};
 use crate::position::Position;
+use crate::scale::Scale;
+
 use bevy_ecs::prelude::Bundle;
 
 /// A [`Bundle`] of components that store 2-dimensional information about position and orientation
@@ -43,4 +46,8 @@ pub struct TwoDBundle<C: Coordinate> {
     pub angular_velocity: AngularVelocity,
     /// The rate at which angular velocity changes in deci-degrees per second per second
     pub angular_acceleration: AngularAcceleration,
+    /// The axis-aligned bounding box of this entity
+    pub aabb: AxisAlignedBoundingBox<C>,
+    /// The relative scale of this entity
+    pub scale: Scale<C>,
 }

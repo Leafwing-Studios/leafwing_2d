@@ -9,6 +9,12 @@ use bevy_ecs::prelude::Component;
 #[derive(Component, Clone, Debug)]
 pub struct Scale<C: Coordinate>(pub C::Data);
 
+impl<C: Coordinate> Default for Scale<C> {
+    fn default() -> Self {
+        Scale(C::DATA_ONE)
+    }
+}
+
 mod ops {
     use core::ops::{Div, Mul};
 

@@ -14,4 +14,7 @@ impl Coordinate for F32 {
     const MIN: Self = F32(f32::MIN);
     const MAX: Self = F32(f32::MAX);
     const ZERO: Self = F32(0.0);
+
+    const DATA_ZERO: f32 = 0.;
+    const DATA_ONE: f32 = 1.;
 }

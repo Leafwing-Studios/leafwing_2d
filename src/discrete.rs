@@ -101,6 +101,9 @@ impl Coordinate for OrthogonalGrid {
     const ZERO: OrthogonalGrid = OrthogonalGrid(0);
     const MIN: OrthogonalGrid = OrthogonalGrid(isize::MIN);
     const MAX: OrthogonalGrid = OrthogonalGrid(isize::MAX);
+
+    const DATA_ZERO: isize = 0;
+    const DATA_ONE: isize = 1;
 }
 
 impl DiscreteCoordinate for OrthogonalGrid {
@@ -168,6 +171,9 @@ impl Coordinate for AdjacentGrid {
     const ZERO: AdjacentGrid = AdjacentGrid(0);
     const MIN: AdjacentGrid = AdjacentGrid(isize::MIN);
     const MAX: AdjacentGrid = AdjacentGrid(isize::MAX);
+
+    const DATA_ZERO: isize = 0;
+    const DATA_ONE: isize = 1;
 }
 
 impl DiscreteCoordinate for AdjacentGrid {
@@ -259,6 +265,9 @@ impl Coordinate for FlatHex {
     const ZERO: FlatHex = FlatHex(0);
     const MIN: FlatHex = FlatHex(isize::MIN);
     const MAX: FlatHex = FlatHex(isize::MAX);
+
+    const DATA_ZERO: isize = 0;
+    const DATA_ONE: isize = 1;
 }
 
 impl DiscreteCoordinate for FlatHex {
@@ -340,6 +349,9 @@ impl Coordinate for PointyHex {
     const ZERO: PointyHex = PointyHex(0);
     const MIN: PointyHex = PointyHex(isize::MIN);
     const MAX: PointyHex = PointyHex(isize::MAX);
+
+    const DATA_ZERO: isize = 0;
+    const DATA_ONE: isize = 1;
 }
 
 impl DiscreteCoordinate for PointyHex {

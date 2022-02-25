@@ -73,7 +73,7 @@ pub enum Intersects {
 /// assert_eq!(clamped_outlier, aabb.top_right());
 /// assert!(aabb.contains(clamped_outlier))
 /// ```
-#[derive(Debug, Component, Clone, PartialEq, Eq)]
+#[derive(Debug, Component, Clone, PartialEq, Eq, Default)]
 pub struct AxisAlignedBoundingBox<C: Coordinate> {
     /// The left extent of the bounding box
     pub left: C,

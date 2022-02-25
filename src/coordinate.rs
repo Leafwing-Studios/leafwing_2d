@@ -55,7 +55,12 @@ pub trait Coordinate:
         + Add<Output = <Self as Coordinate>::Data>
         + Sub<Output = <Self as Coordinate>::Data>
         + Mul<Output = <Self as Coordinate>::Data>
-        + Div<Output = <Self as Coordinate>::Data>;
+        + Div<Output = <Self as Coordinate>::Data>
+        + Send
+        + Sync
+        + Debug
+        + Default
+        + 'static;
 
     /// The ratio between 1 unit in this coordinate system to 1 unit of [`Transform.translation`](bevy_transform::components::Transform)
     const COORD_TO_TRANSFORM: f32;
@@ -66,10 +71,18 @@ pub trait Coordinate:
     /// The maximum representable value
     const MAX: Self;
 
-    /// Adding or subtracting this coordinate to another coordinate does not change the value
+    /// Adding or subtracting 0 does not change the value
     ///
     /// This should be equal to the value returned by [`Default::default()`]
     const ZERO: Self;
+
+    /// Adding or subtracting 0 does not change the value
+    ///
+    /// This should be equal to the value returned by [`Default::default()`]
+    const DATA_ZERO: Self::Data;
+
+    /// Multiplying or dividing data by this 1 does not change the value
+    const DATA_ONE: Self::Data;
 
     /// The (0, 0) cell [`Position`]
     const ORIGIN: Position<Self> = Position {
