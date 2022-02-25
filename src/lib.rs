@@ -6,6 +6,7 @@
 #![feature(generic_const_exprs)]
 
 pub mod bounding;
+pub mod bundles;
 pub mod continuous;
 pub mod coordinate;
 pub mod discrete;
@@ -20,6 +21,7 @@ pub mod scale;
 /// The most commonly useful bits of the library
 pub mod prelude {
     pub use crate::bounding::{AxisAlignedBoundingBox, BoundingRegion};
+    pub use crate::bundles::TwoDBundle;
     pub use crate::continuous::F32;
     pub use crate::coordinate::Coordinate;
     pub use crate::discrete::DiscreteCoordinate;
@@ -27,6 +29,6 @@ pub mod prelude {
         Acceleration, AngularAcceleration, AngularVelocity, Kinematic, Velocity,
     };
     pub use crate::orientation::{Direction, Orientation, OrientationPositionInterop, Rotation};
-    pub use crate::plugin::{TwoDBundle, TwoDPlugin};
+    pub use crate::plugin::TwoDPlugin;
     pub use crate::position::{Position, Positionlike};
 }
