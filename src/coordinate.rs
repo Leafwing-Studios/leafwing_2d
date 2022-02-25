@@ -157,12 +157,16 @@ pub trait TrivialCoordinate: Sized {
     type Wrapped: Clone + Copy + Debug + Add + Sub + Mul + Div + Rem + Default;
 
     /// Creates a new coodinate with the underlying `value`;
+    #[must_use]
     fn new(value: Self::Wrapped) -> Self;
 
     /// The underlying value stored
+    #[must_use]
     fn value(&self) -> Self::Wrapped;
 
     /// Set this coordinate to `value`
+    #[must_use]
+    #[inline]
     fn set(&mut self, value: Self::Wrapped) {
         *self = Self::new(value);
     }

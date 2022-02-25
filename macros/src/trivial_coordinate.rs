@@ -60,14 +60,17 @@ pub(crate) fn trivial_coordinate_inner(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics #crate_path::coordinate::TrivialCoordinate for #struct_name #type_generics #where_clause {
             type Wrapped = #wrapped_type;
 
+            #[inline]
             fn new(value: Self::Wrapped) -> Self {
                 Self(value)
             }
 
+            #[inline]
             fn value(&self) -> Self::Wrapped {
                 self.0
             }
 
+            #[inline]
             fn set(&mut self, value: Self::Wrapped){
                 self.0 = value
             }
