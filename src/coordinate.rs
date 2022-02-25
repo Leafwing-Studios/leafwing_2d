@@ -33,9 +33,9 @@ pub trait Coordinate:
     + AddAssign
     + Sub<Output = Self>
     + SubAssign
-    + Mul<Output = Self>
+    + Mul<Self, Output = Self>
     + MulAssign
-    + Div<Output = Self>
+    + Div<Self, Output = Self>
     + DivAssign
     + Rem<Output = Self>
     + RemAssign
@@ -46,10 +46,16 @@ pub trait Coordinate:
     + Into<f32>
     + From<Self::Data>
     + Into<Self::Data>
+    + Mul<Self::Data, Output = Self>
+    + Div<Self::Data, Output = Self>
     + 'static
 {
     /// The underlying numeric storage type (e.g. `f32`, `i8` or so on)
-    type Data;
+    type Data: Copy
+        + Add<Output = <Self as Coordinate>::Data>
+        + Sub<Output = <Self as Coordinate>::Data>
+        + Mul<Output = <Self as Coordinate>::Data>
+        + Div<Output = <Self as Coordinate>::Data>;
 
     /// The ratio between 1 unit in this coordinate system to 1 unit of [`Transform.translation`](bevy_transform::components::Transform)
     const COORD_TO_TRANSFORM: f32;
@@ -61,6 +67,8 @@ pub trait Coordinate:
     const MAX: Self;
 
     /// Adding or subtracting this coordinate to another coordinate does not change the value
+    ///
+    /// This should be equal to the value returned by [`Default::default()`]
     const ZERO: Self;
 
     /// The (0, 0) cell [`Position`]

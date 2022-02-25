@@ -15,6 +15,7 @@ pub mod orientation;
 pub mod partitioning;
 pub mod plugin;
 pub mod position;
+pub mod scale;
 
 /// The most commonly useful bits of the library
 pub mod prelude {
