@@ -5,7 +5,7 @@ Want to accelerate an object in 2D?
 Wish that there was a simple way to work with grids?
 Just want to know if two axis-aligned bounding boxes intersect?
 
-Try out `leafwing_2d` for a simple, well-tested, and fully integrated solution to these problems!
+Try out `leafwing_2d`: a flexible, ergonomics-first solution!
 
 Features:
 
@@ -14,9 +14,10 @@ Features:
 - Say goodbye to quaternions: use the `Direction` (unit vector) and `Rotation` (angle from midnight) types instead!
   - Jam-packed with powerful, tested convenience methods like `Orientation::orientation_to` and `Rotation::towards`
   - Slice and dice the unit circle into cardinal, hexagonal or octagonal directions with the `DirectionPartitioning` trait
+- Simply scale your sprites with the `LeafwingSpriteBundle` and the `Scale` type.
+  - Perform basic collision checks using the `AxisAlignedBoundingBox` type.
 - Use `TwoDPlugin` to automatically synchronize your `Transforms` with `Position`, `Direction` and `Rotation`, but modify whichever one you'd like
 - Accelerate your game creation with `Velocity<C>`, `Acceleration<C>` and their angular analogues
-- Perform basic collision checks using the `AxisAlignedBoundingBox` type.
 - Convert to and from screen space in whatever coordinate system you want using the `Positionlike` trait
 - Made with Leafwing Studios' trademark `#![forbid(missing_docs)]`
 
