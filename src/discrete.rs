@@ -37,7 +37,7 @@ pub trait DiscreteCoordinate: Coordinate {
     ///
     /// The order should always be clockwise, starting from north (+y)
     #[must_use]
-    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS];
+    fn neighbors(position: Position<Self>) -> Vec<Position<Self>>;
 
     /// The [`Direction`] towards each neighbor
     ///
@@ -48,12 +48,15 @@ pub trait DiscreteCoordinate: Coordinate {
     ///
     /// ```
     #[must_use]
-    fn neighbor_directions() -> [Direction; Self::N_NEIGHBORS] {
-        Self::neighbors(Self::ORIGIN).map(|position| {
-            position
-                .try_into()
-                .expect("The positions of the neighbors cannot be (0,0).")
-        })
+    fn neighbor_directions() -> Vec<Direction> {
+        Self::neighbors(Self::ORIGIN)
+            .iter()
+            .map(|&position| {
+                position
+                    .try_into()
+                    .expect("The positions of the neighbors cannot be (0,0).")
+            })
+            .collect()
     }
 
     /// Asserts that the values near the end of this range can be losslessly converted to and from [`f32`]
@@ -124,8 +127,8 @@ impl DiscreteCoordinate for OrthogonalGrid {
 
     #[inline]
     #[must_use]
-    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
-        [
+    fn neighbors(position: Position<Self>) -> Vec<Position<Self>> {
+        vec![
             Position {
                 x: Self(position.x.0),
                 y: Self(position.y.0 + 1),
@@ -194,8 +197,8 @@ impl DiscreteCoordinate for AdjacentGrid {
 
     #[inline]
     #[must_use]
-    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
-        [
+    fn neighbors(position: Position<Self>) -> Vec<Position<Self>> {
+        vec![
             // N
             Position {
                 x: Self(position.x.0),
@@ -288,8 +291,8 @@ impl DiscreteCoordinate for FlatHex {
 
     #[inline]
     #[must_use]
-    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
-        [
+    fn neighbors(position: Position<Self>) -> Vec<Position<Self>> {
+        vec![
             // N
             Position {
                 x: Self(position.x.0),
@@ -372,8 +375,8 @@ impl DiscreteCoordinate for PointyHex {
 
     #[inline]
     #[must_use]
-    fn neighbors(position: Position<Self>) -> [Position<Self>; Self::N_NEIGHBORS] {
-        [
+    fn neighbors(position: Position<Self>) -> Vec<Position<Self>> {
+        vec![
             // NE
             Position {
                 x: Self(position.x.0 + 1),

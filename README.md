@@ -21,8 +21,6 @@ Features:
 - Convert to and from screen space in whatever coordinate system you want using the `Positionlike` trait
 - Made with Leafwing Studios' trademark `#![forbid(missing_docs)]`
 
-WARNING: this crate is currently nightly-only, as it relies on `#![feature(generic_const_exprs)]` to provide an efficient generic API to fetch cell neighbours.
-
 ## Instructions
 
 ### Getting started
