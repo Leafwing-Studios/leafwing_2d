@@ -113,7 +113,7 @@ pub trait Coordinate:
         round_trip_float - float
     }
 
-    /// Computes the signed round-trip error of converting from the [`Coordinate`] type to an [`f32] and back again
+    /// Computes the signed round-trip error of converting from the [`Coordinate`] type to an [`f32`] and back again
     ///
     /// The difference is computed as `final - initial`.
     /// For [`DiscreteCoordinates`](crate::discrete::DiscreteCoordinate), this should be 0 for all values across the range.
@@ -186,7 +186,6 @@ pub trait TrivialCoordinate: Sized {
     fn value(&self) -> Self::Wrapped;
 
     /// Set this coordinate to `value`
-    #[must_use]
     #[inline]
     fn set(&mut self, value: Self::Wrapped) {
         *self = Self::new(value);
