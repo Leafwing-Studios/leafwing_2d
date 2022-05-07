@@ -18,13 +18,13 @@ opt-level = 3
 members = ["./", "tools/ci"]
 
 [dependencies]
-bevy_app = {version = "0.6", default-features = false}
-bevy_ecs = { version = "0.6", default-features = false}
-bevy_math = { version = "0.6", default-features = false}
-bevy_transform = { version = "0.6", default-features = false}
-bevy_core = {version = "0.6", default-features = false}
+bevy_app = {version = "0.7", default-features = false}
+bevy_ecs = { version = "0.7", default-features = false}
+bevy_math = { version = "0.7", default-features = false}
+bevy_transform = { version = "0.7", default-features = false}
+bevy_core = {version = "0.7", default-features = false}
 derive_more = "0.99"
 leafwing_2d_macros = { path = "macros", version = "0.1" }
 
 [dev-dependencies]
-bevy = "0.6"
+bevy = "0.7"
