@@ -433,7 +433,7 @@ mod rotation {
 
     // Conversion methods
     impl Rotation {
-        /// Constructs a [`Rotation`](crate::orientation::Direction) from an (x,y) Euclidean coordinate
+        /// Constructs a [`Rotation`](crate::orientation::Direction) from a [`Vec2`](glam::Vec2)
         ///
         /// If both x and y are nearly 0 (the magnitude is less than [`EPSILON`](f32::EPSILON)),
         /// [`Err(NearlySingularConversion)`] will be returned instead.
@@ -446,19 +446,19 @@ mod rotation {
         /// assert_eq!(Rotation::from_xy(Vec2::new(0.0, 1.0)), Ok(Rotation::NORTH));
         /// ```
         #[inline]
-        pub fn from_xy(xy: Vec2) -> Result<Rotation, NearlySingularConversion> {
-            if xy.length_squared() < f32::EPSILON * f32::EPSILON {
+        pub fn from_vec2(vec: Vec2) -> Result<Rotation, NearlySingularConversion> {
+            if vec.length_squared() < f32::EPSILON * f32::EPSILON {
                 Err(NearlySingularConversion)
             } else {
-                let radians = f32::atan2(xy.x, xy.y);
+                let radians = f32::atan2(vec.x, vec.y);
                 Ok(Rotation::from_radians(radians))
             }
         }
 
-        /// Converts this direction into an (x, y) pair with magnitude 1
+        /// Converts this direction into a [`Vec2`](glam::Vec2) with magnitude 1
         #[inline]
         #[must_use]
-        pub fn into_xy(self) -> Vec2 {
+        pub fn into_vec2(self) -> Vec2 {
             let radians = self.into_radians();
             Vec2::new(radians.sin(), radians.cos())
         }
@@ -749,7 +749,7 @@ mod conversions {
     impl From<Rotation> for Direction {
         fn from(rotation: Rotation) -> Direction {
             Direction {
-                unit_vector: rotation.into_xy(),
+                unit_vector: rotation.into_vec2(),
             }
         }
     }
@@ -765,13 +765,13 @@ mod conversions {
         type Error = NearlySingularConversion;
 
         fn try_from(vec2: Vec2) -> Result<Rotation, NearlySingularConversion> {
-            Rotation::from_xy(vec2)
+            Rotation::from_vec2(vec2)
         }
     }
 
     impl From<Rotation> for Vec2 {
         fn from(rotation: Rotation) -> Vec2 {
-            rotation.into_xy()
+            rotation.into_vec2()
         }
     }
 
