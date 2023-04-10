@@ -18,10 +18,10 @@ use core::marker::PhantomData;
 
 /// Ensures that two-dimensional [`Position`], [`Direction`] and [`Rotation`] components are synchronized with the [`Transform`] equivalent
 ///
-/// The type paramter `C` is the coordinate type used in [`Position`].
+/// The type parameter `C` is the coordinate type used in [`Position`].
 /// [`Transform`] can be modified directly, but if both the [`Transform`]
 /// and its 2D analogue have been changed, the 2D version will take priority.
-/// Similary, [`Rotation`] takes priority over [`Direction`].
+/// Similarly, [`Rotation`] takes priority over [`Direction`].
 ///
 /// System labels are stored in [`TwoDSystem`], which describes the working of this plugin in more depth.
 ///

@@ -177,7 +177,7 @@ pub trait TrivialCoordinate: Sized {
     /// This should match [`Coordinate::Data`].
     type Wrapped: Clone + Copy + Debug + Add + Sub + Mul + Div + Rem + Default;
 
-    /// Creates a new coodinate with the underlying `value`;
+    /// Creates a new coordinate with the underlying `value`;
     #[must_use]
     fn new(value: Self::Wrapped) -> Self;
 

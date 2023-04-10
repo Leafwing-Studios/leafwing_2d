@@ -110,7 +110,7 @@ impl Coordinate for OrthogonalGrid {
 }
 
 impl DiscreteCoordinate for OrthogonalGrid {
-    type Parititions = CardinalQuadrant;
+    type Partitions = CardinalQuadrant;
     const N_NEIGHBORS: usize = 4;
 
     #[inline]
@@ -180,7 +180,7 @@ impl Coordinate for AdjacentGrid {
 }
 
 impl DiscreteCoordinate for AdjacentGrid {
-    type Parititions = CardinalQuadrant;
+    type Partitions = CardinalQuadrant;
     const N_NEIGHBORS: usize = 8;
 
     #[inline]
@@ -274,7 +274,7 @@ impl Coordinate for FlatHex {
 }
 
 impl DiscreteCoordinate for FlatHex {
-    type Parititions = CardinalQuadrant;
+    type Partitions = CardinalQuadrant;
     const N_NEIGHBORS: usize = 6;
 
     #[inline]
@@ -358,7 +358,7 @@ impl Coordinate for PointyHex {
 }
 
 impl DiscreteCoordinate for PointyHex {
-    type Parititions = CardinalQuadrant;
+    type Partitions = CardinalQuadrant;
     const N_NEIGHBORS: usize = 6;
 
     #[inline]

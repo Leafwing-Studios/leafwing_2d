@@ -321,7 +321,7 @@ mod rotation_direction {
             }
         }
 
-        /// Reverese the direction into the opposite enum variant
+        /// Reverse the direction into the opposite enum variant.
         #[inline]
         pub fn reverse(self) -> RotationDirection {
             use RotationDirection::*;
